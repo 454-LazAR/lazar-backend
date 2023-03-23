@@ -1,6 +1,9 @@
+version: '3.8'
+
 services:
   db:
     image: mariadb
+    env_file: ./.env
     environment:
       MYSQL_ROOT_PASSWORD: ${ROOT_PASS}
       MYSQL_DATABASE: maindb
@@ -10,3 +13,24 @@ services:
       - ./database:/var/lib/mysql
     ports:
       - "3306:3306"
+  app:
+    depends_on:
+      - db
+    build: ./lazar-backend-app
+    restart: on-failure
+    env_file: ./.env
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_APPLICATION_JSON: '{
+        "spring.datasource.url"  : "jdbi:mysql://db:3306/maindb?useSSL=false",
+        "spring.datasource.username" : "$DB_USER",
+        "spring.datasource.password" : "$ROOT_PASS"
+      }'
+    volumes:
+      - .m2:/root/.m2
+    stdin_open: true
+    tty: true
+      
+volumes:
+  db:

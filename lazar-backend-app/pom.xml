@@ -8,11 +8,11 @@
 		<version>3.0.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.example</groupId>
-	<artifactId>spring-boot-initial</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>spring-boot-initial</name>
-	<description>Demo project for Spring Boot</description>
+	<groupId>com.lazar</groupId>
+	<artifactId>lazar-backend-app</artifactId>
+	<version>1.0.0</version>
+	<name>lazar-backend-app</name>
+	<description>Backend Services for LazAR</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>

@@ -23,3 +23,7 @@ dependency-reduced-pom.xml
 README.html
 .idea
 *.iml
+
+# temporary docker related things
+database/
+.m2
