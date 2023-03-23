@@ -1,0 +1,12 @@
+
+games:
+  get:
+  insert:
+  update:
+  delete:
+
+players:
+  get:
+  insert:
+  update:
+  delete:
