@@ -1,6 +1,6 @@
 FROM maven:3.6.3-openjdk-17
 
-WORKDIR /lazar-app
+WORKDIR /lazar-backend-api
 COPY . .
 RUN mvn clean install
 
