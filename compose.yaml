@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
   db:
     image: mariadb
     env_file: ./.env
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${ROOT_PASS}
       MYSQL_DATABASE: maindb
@@ -13,6 +12,7 @@ services:
       - ./database:/var/lib/mysql
     ports:
       - "3306:3306"
+
   api:
     depends_on:
       - db
@@ -27,11 +27,8 @@ services:
         "spring.datasource.username" : "$DB_USER",
         "spring.datasource.password" : "$ROOT_PASS",
         "spring.datasource.driver-class-name" : "org.mariadb.jdbc.Driver"
-      }'
+        }'
     volumes:
       - .m2:/root/.m2
     stdin_open: true
     tty: true
-      
-volumes:
-  db:
