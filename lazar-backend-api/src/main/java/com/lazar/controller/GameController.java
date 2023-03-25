@@ -39,4 +39,8 @@ public class GameController {
 		hitDetectionService.check();
 	}
 
+	@GetMapping("/hello-world")
+	public String helloWorld() {
+		return "Hello world!";
+	}
 }
