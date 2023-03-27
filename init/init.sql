@@ -1,6 +1,8 @@
 
 CREATE DATABASE lazardb;
 
+GRANT ALL PRIVILEGES ON lazardb.* TO 'lazar'@'%';
+
 USE lazardb;
 
 CREATE TABLE games (
