@@ -25,5 +25,5 @@ README.html
 *.iml
 
 # temporary docker related things
-database/
+data/
 .m2
