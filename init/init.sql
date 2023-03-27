@@ -1,6 +1,4 @@
 
-CREATE DATABASE lazardb;
-
 GRANT ALL PRIVILEGES ON lazardb.* TO 'lazar'@'%';
 
 USE lazardb;
@@ -17,5 +15,5 @@ CREATE TABLE players (
 	health INT,
 	isAdmin BOOLEAN,
 	-- GPS Data
-	FOREIGN KEY (gameId) REFERENCES Games(id)
+	FOREIGN KEY (gameId) REFERENCES games(id)
 );

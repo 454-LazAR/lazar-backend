@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${ROOT_PASS}
-      MYSQL_DATABASE: maindb
+      MYSQL_DATABASE: lazardb
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASS}
     volumes:
