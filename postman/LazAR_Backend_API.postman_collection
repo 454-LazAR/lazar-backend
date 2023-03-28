@@ -1,0 +1,36 @@
+{
+	"info": {
+		"_postman_id": "e6f5692a-1cd6-4538-b5c6-947b0eb698d3",
+		"name": "LazAR Backend API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25652049"
+	},
+	"item": [
+		{
+			"name": "Join Game",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"drew\",\r\n    \"gameId\": \"100\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/join",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"join"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
