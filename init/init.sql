@@ -9,7 +9,7 @@ CREATE TABLE games (
 );
 
 CREATE TABLE players (
-	id INT PRIMARY KEY,
+	id VARCHAR(36) PRIMARY KEY,
 	gameId INT,
 	username VARCHAR(30),
 	health INT,

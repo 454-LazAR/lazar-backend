@@ -27,7 +27,8 @@ services:
         "spring.datasource.url"  : "jdbc:mariadb://db:3306/lazardb",
         "spring.datasource.username" : "$DB_USER",
         "spring.datasource.password" : "$DB_PASS",
-        "spring.datasource.driver-class-name" : "org.mariadb.jdbc.Driver"
+        "spring.datasource.driver-class-name" : "org.mariadb.jdbc.Driver",
+        "server.error.include-message" : "always"
         }'
     volumes:
       - .m2:/root/.m2

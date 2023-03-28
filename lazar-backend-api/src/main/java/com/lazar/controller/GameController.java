@@ -8,6 +8,7 @@ import com.lazar.model.Player;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -25,13 +26,13 @@ public class GameController {
 	}
 
 	@PostMapping("/start")
-	public Game startGame() {
+	public Player startGame() {
 		return gameAdminService.start();
 	}
 
 	@PostMapping("/join")
-	public Player joinGame() {
-		return gameAdminService.join();
+	public Player joinGame(@RequestBody Player player) {
+		return gameAdminService.join(player);
 	}
 
 	@GetMapping("/checkhit")
