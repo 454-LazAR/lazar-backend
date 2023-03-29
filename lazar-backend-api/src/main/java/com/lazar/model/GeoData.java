@@ -15,7 +15,7 @@ import java.util.UUID;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class GeoData implements Serializable {
 
-    public final static double EARTH_RADIUS = 6371e3; // Earth's radius in meters
+    private final static double EARTH_RADIUS = 6371e3; // Earth's radius in meters
 
     public Double bearingTo(GeoData firingAt) {
         double lat1 = Math.toRadians(this.latitude);

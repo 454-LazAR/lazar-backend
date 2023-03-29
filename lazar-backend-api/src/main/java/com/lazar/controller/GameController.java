@@ -2,6 +2,7 @@ package com.lazar.controller;
 
 import com.lazar.core.GameAdminService;
 import com.lazar.core.GameEventService;
+import com.lazar.model.GeoData;
 import com.lazar.model.Ping;
 import com.lazar.model.Player;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +21,8 @@ public class GameController {
 	private GameEventService gameEventService;
 
 	@GetMapping("/")
-	public Ping ping() {
-		return gameEventService.ping();
+	public Ping ping(@RequestBody GeoData geoData) {
+		return gameEventService.ping(geoData);
 	}
 
 	@PostMapping("/create")
@@ -40,8 +41,8 @@ public class GameController {
 	}
 
 	@GetMapping("/check-hit")
-	public void checkHit() {
-		gameEventService.checkHit();
+	public void checkHit(@RequestBody GeoData geoData) {
+		gameEventService.checkHit(geoData);
 	}
 
 	@GetMapping("/hello-world")

@@ -13,5 +13,4 @@ public class Ping {
     private Game.GameStatus gameStatus;
     private Integer health;
     private List<String> usernames;
-
 }
