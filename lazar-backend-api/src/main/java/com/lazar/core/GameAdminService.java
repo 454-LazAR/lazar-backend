@@ -1,7 +1,6 @@
 package com.lazar.core;
 
 import com.lazar.model.Game;
-import com.lazar.model.Ping;
 import com.lazar.model.Player;
 import com.lazar.persistence.GameRepository;
 import com.lazar.persistence.PlayerRepository;
@@ -10,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,11 +19,21 @@ public class GameAdminService {
 
     public static final int MAX_HEALTH = 100;
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     @Autowired
     private PlayerRepository playerRepository;
 
     @Autowired
     private GameRepository gameRepository;
+
+    private static String generateUniqueGameId() {
+        byte[] randomBytes = new byte[10];
+        SECURE_RANDOM.nextBytes(randomBytes);
+        String base64String = Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+        String alphanumericString = base64String.replaceAll("[^a-zA-Z0-9]", "");
+        return alphanumericString.substring(0, 6).toLowerCase();
+    }
 
     public Player create(Player playerDetails) {
         if(playerDetails.getUsername() == null){
@@ -30,7 +41,7 @@ public class GameAdminService {
         }
         String gameId;
         do {
-            gameId = UUID.randomUUID().toString().substring(0, 6);
+            gameId = generateUniqueGameId();
         } while(!gameRepository.insertGame(gameId));
         playerDetails.setGameId(gameId);
         playerDetails.setIsAdmin(true);

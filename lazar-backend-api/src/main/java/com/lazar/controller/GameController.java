@@ -17,11 +17,11 @@ public class GameController {
 	private GameAdminService gameAdminService;
 
 	@Autowired
-	private GameEventService hitDetectionService;
+	private GameEventService gameEventService;
 
 	@GetMapping("/")
 	public Ping ping() {
-		return hitDetectionService.ping();
+		return gameEventService.ping();
 	}
 
 	@PostMapping("/create")
@@ -41,7 +41,7 @@ public class GameController {
 
 	@GetMapping("/check-hit")
 	public void checkHit() {
-		hitDetectionService.check();
+		gameEventService.checkHit();
 	}
 
 	@GetMapping("/hello-world")

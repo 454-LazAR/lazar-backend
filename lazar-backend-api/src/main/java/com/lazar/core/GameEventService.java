@@ -19,7 +19,7 @@ public class GameEventService {
         return null;
     }
 
-    public void check() {
+    public void checkHit() {
 
     }
 
