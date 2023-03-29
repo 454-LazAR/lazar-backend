@@ -7,40 +7,67 @@ The backend server's configuration files and API code
 
 ## At a Glance
 
-All routes are relative to `https://www.cs571.org/s23/hw6/api/`
+All routes are relative to `http://143.244.200.36:8080` (Prod) or `http://localhost:8080` (Dev)
 
-| Method | URL | Purpose | Return Codes |
-| --- | --- | --- | --- |
-| `GET`| `/chatroom` | Get all chatrooms. | 200, 304 |
-| `GET` | `/chatroom/:chatroomName/messages`| Get latest 25 messages for specified chatroom. | 200, 304, 404 |
-| `POST` | `/chatroom/:chatroomName/messages` | Posts a message to the specified chatroom. | 200, 400, 404, 413 |
-| `DELETE` | `/chatroom/:chatroomName/messages/:messageId` | Deletes the given message. | 200, 400, 401, 404 |
-| `POST` | `/register` | Registers a user account. | 200, 400, 401, 409, 413  |
-| `POST` | `/login` | Logs a user in. | 200, 400, 401, 404 |
-| `POST` | `/logout` | Logs the current user out. | 200 |
-| `GET` | `/whoami` | Gets details about the currently logged in user. | 200, 401 |
-
-An unexpected server error `500` *may* occur during any of these requests. It is likely to do with your request. Make sure that you have included the appropriate headers and, if you are doing a POST, that you have a properly formatted JSON body. If the error persists, please contact a member of the course staff.
-
-Make sure to include credentials and specify a content-type where appropriate. A valid `X-CS571-ID` must be included with each request, otherwise you will recieve a `401` in addition to any of the errors described below.
+| Method | URL     | Purpose                                    | Return Codes            |
+|--------|---------|--------------------------------------------|-------------------------|
+| `POST` | `/join` | Join a game with a game id and a username. | 200, 400, 404, 409, 500 |
 
 ## In-Depth Explanations
 
 ### Getting all Chatrooms
-`GET` `https://www.cs571.org/s23/hw6/api/chatroom`
+`GET` `http://143.244.200.36:8080/join`
 
-A `200` (new) or `304` (cached) response will be sent with the list of all chatrooms.
+
+
+**Example Request Body**
 
 ```json
-[
-    "Bascom",
-    "Brogden",
-    "Chamberlin",
-    "Grainger",
-    "Ingraham",
-    "VanVleck",
-    "Vilas"
-]
+{
+  "username": "drew",
+  "gameId": "100"
+}
+```
+
+A `200` will be sent with the player's UUID and gameId.
+```json
+{
+  "id": "64a4747a-5e64-4959-9918-a41fce099320",
+  "gameId": 100
+}
+```
+
+A `400` will be sent if username or gameid are not specified.
+```json
+{
+  "timestamp": "2023-03-28T06:08:56.777+00:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Must specify gameId and username.",
+  "path": "/join"
+}
+```
+
+A `404` will be sent if the specified gameId is not valid (there is no game that exists with that ID).
+```json
+{
+  "timestamp": "2023-03-28T06:10:25.918+00:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Game does not exist.",
+  "path": "/join"
+}
+```
+
+A `409` will be sent if the specified gameId is already in progress or has concluded.
+```json
+{
+  "timestamp": "2023-03-28T06:11:46.455+00:00",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Game is already in progress or has completed.",
+  "path": "/join"
+}
 ```
 
 ### Getting Messages for Chatroom

@@ -1,12 +1,18 @@
 
 games:
   get:
-  insert:
+    by.gameId: >
+      SELECT * FROM games WHERE id = :id
+  insert: >
+    INSERT INTO games (id, gameStatus) VALUES (:id, "IN_LOBBY")
   update:
   delete:
 
 players:
   get:
-  insert:
+    usernames: >
+      SELECT username FROM players WHERE gameId = :id
+  insert: >
+    INSERT INTO players (id, gameId, username, health, isAdmin) VALUES (:id, :gameId, :username, :health, :isAdmin)
   update:
   delete:
