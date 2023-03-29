@@ -42,19 +42,23 @@ public class GameEventService {
         return player.get();
     }
 
+    private Game getGameFromPlayerId(Player player) {
+        Optional<Game> currGame = gameRepository.getGame(player.getGameId());
+        if (currGame.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game doesn't exist.");
+        }
+        return currGame.get();
+    }
+
     public Ping lobbyPing(GeoData geoData) {
         // ensure valid player UUID
         Player player = checkValidPlayerId(geoData);
 
-        // check game status
-        Optional<Game> currGame = gameRepository.getGame(player.getGameId());
-        // game doesn't exist
-        if (currGame.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game doesn't exist.");
-        }
-        geoData.setGameId(currGame.get().getId());
+        Game currGame = getGameFromPlayerId(player);
+        geoData.setGameId(currGame.getId());
 
-        if (currGame.get().getGameStatus() == Game.GameStatus.IN_LOBBY) {
+        // check if we're in the lobby or if the game has started
+        if (currGame.getGameStatus() == Game.GameStatus.IN_LOBBY) {
             List<String> currPlayers = playerRepository.getUsernamesByGame(geoData.getGameId());
             return new Ping(Game.GameStatus.IN_LOBBY, null, currPlayers);
         }
@@ -65,11 +69,19 @@ public class GameEventService {
     }
 
     public Ping gamePing(GeoData geoData) {
-        // TODO
-        // is there a game id
-        //
-        //return new Ping(currGame.get().getGameStatus(), playerRepository.getPlayerHealth(geoData.getPlayerId()), null);
-        return null;
+        Player player = checkValidPlayerId(geoData);
+        Game game = getGameFromPlayerId(player);
+
+        // get health
+        Optional<Integer> health = playerRepository.getPlayerHealth(geoData.getPlayerId());
+        // couldn't find health in database, something went wrong
+        if (health.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Player health not found in database.");
+        }
+
+        // TODO update database with player location and timestamp
+
+        return new Ping(game.getGameStatus(), health.get(), null);
     }
 
     public boolean checkHit(GeoData geoData) {
