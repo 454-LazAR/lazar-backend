@@ -15,11 +15,11 @@ public class Game implements Serializable {
     public enum GameStatus {
         IN_PROGRESS, IN_LOBBY, COMPLETE
     }
-    private int id;
+    private String id;
     private GameStatus gameStatus;
 
     public Game(String id, String gameStatus) {
-        this.id = Integer.parseInt(id);
+        this.id = id;
         this.gameStatus = GameStatus.valueOf(gameStatus);
     }
 }

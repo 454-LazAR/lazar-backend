@@ -1,8 +1,7 @@
 package com.lazar.controller;
 
 import com.lazar.core.GameAdminService;
-import com.lazar.core.HitDetectionService;
-import com.lazar.model.Game;
+import com.lazar.core.GameEventService;
 import com.lazar.model.Ping;
 import com.lazar.model.Player;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +17,16 @@ public class GameController {
 	private GameAdminService gameAdminService;
 
 	@Autowired
-	private HitDetectionService hitDetectionService;
+	private GameEventService hitDetectionService;
 
 	@GetMapping("/")
 	public Ping ping() {
-		return gameAdminService.ping();
+		return hitDetectionService.ping();
+	}
+
+	@PostMapping("/create")
+	public Player createGame(@RequestBody Player player) {
+		return gameAdminService.create(player);
 	}
 
 	@PostMapping("/start")
@@ -35,7 +39,7 @@ public class GameController {
 		return gameAdminService.join(player);
 	}
 
-	@GetMapping("/checkhit")
+	@GetMapping("/check-hit")
 	public void checkHit() {
 		hitDetectionService.check();
 	}

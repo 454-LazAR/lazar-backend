@@ -24,29 +24,45 @@ public class GameAdminService {
     @Autowired
     private GameRepository gameRepository;
 
-    public Ping ping() {
-        return null;
+    public Player create(Player playerDetails) {
+        if(playerDetails.getUsername() == null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Must specify username.");
+        }
+        String gameId;
+        do {
+            gameId = UUID.randomUUID().toString().substring(0, 6);
+        } while(!gameRepository.insertGame(gameId));
+        playerDetails.setGameId(gameId);
+        playerDetails.setIsAdmin(true);
+        return addPlayerToGame(playerDetails);
     }
 
-    public Player start() {
-        return null;
-    }
     public Player join(Player playerDetails) {
         if(playerDetails.getGameId() == null || playerDetails.getUsername() == null){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Must specify gameId and username.");
         }
-        Optional<Game> game = gameRepository.selectGame(playerDetails.getGameId());
+        Optional<Game> game = gameRepository.getGame(playerDetails.getGameId());
         if(game.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game does not exist.");
         } else if(game.get().getGameStatus() != Game.GameStatus.IN_LOBBY) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Game is already in progress or has completed.");
         }
+        return addPlayerToGame(playerDetails);
+    }
+
+    private Player addPlayerToGame(Player playerDetails) {
         playerDetails.setId(UUID.randomUUID());
         playerDetails.setHealth(MAX_HEALTH);
-
+        if(playerRepository.getUsernamesByGame(playerDetails.getGameId()).contains(playerDetails.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already used in this game.");
+        }
         if(!playerRepository.insertPlayer(playerDetails)) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error adding player to database.");
         }
         return new Player(playerDetails.getId(), playerDetails.getGameId());
+    }
+
+    public Player start() {
+        return null;
     }
 }

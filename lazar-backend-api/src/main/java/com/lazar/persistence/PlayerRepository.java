@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.Properties;
+import java.util.List;
 
 @Repository
 public class PlayerRepository {
@@ -23,4 +24,10 @@ public class PlayerRepository {
         return status == 1;
     }
 
+    public List<String> getUsernamesByGame(String gameId) {
+        return jdbi.withHandle(h -> h.createQuery(queries.getProperty("players.get.usernames"))
+                .bind("id", gameId)
+                .mapTo(String.class)
+                .list());
+    }
 }
