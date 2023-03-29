@@ -16,3 +16,10 @@ players:
     INSERT INTO players (id, gameId, username, health, isAdmin) VALUES (:id, :gameId, :username, :health, :isAdmin)
   update:
   delete:
+
+geoData:
+  get:
+    in.range: >
+      SELECT * FROM geoData WHERE gameId = :gameId AND playerId != :id 
+      AND timestamp BETWEEN :start AND :end GROUP BY playerId 
+      ORDER BY timestamp DESC LIMIT 1
