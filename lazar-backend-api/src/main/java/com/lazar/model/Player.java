@@ -18,7 +18,6 @@ public class Player implements Serializable {
     private String username;
     private Integer health;
     private Boolean isAdmin;
-    private GPS geoLocation;
 
     public Player(UUID id, String gameId) {
         this.id = id;

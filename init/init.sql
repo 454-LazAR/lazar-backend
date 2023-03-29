@@ -17,3 +17,11 @@ CREATE TABLE players (
 	-- GPS Data
 	FOREIGN KEY (gameId) REFERENCES games(id)
 );
+
+CREATE TABLE geoData (
+	id VARCHAR(36) FOREIGN KEY REFERENCES players(id),
+	gameId VARCHAR(6) FOREIGN KEY REFERENCES games(id),
+	longitude DOUBLE,
+	latitude DOUBLE,
+	timeReceived TIMESTAMP
+);
