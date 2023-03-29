@@ -48,4 +48,11 @@ public class PlayerRepository {
                 .execute());
         return status == 1;
     }
+    public Optional<Integer> getPlayerHealth(UUID playerId) {
+        return jdbi.withHandle(h -> h.createQuery(queries.getProperty("players.get.health"))
+            .bind("id", playerId)
+            .mapTo(Integer.class)
+            .findOne()
+        );
+    }
 }

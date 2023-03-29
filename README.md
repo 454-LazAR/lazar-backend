@@ -2,20 +2,24 @@
 The backend server's configuration files and API code
 
 
-# Example API Documentation
-# CS571 S23 HW6 API Documentation
+# API Documentation
 
 ## At a Glance
 
 All routes are relative to `http://143.244.200.36:8080` (Prod) or `http://localhost:8080` (Dev)
 
+All game-functionality requests must have a valid player UUID.
+
 | Method | URL     | Purpose                                    | Return Codes            |
 |--------|---------|--------------------------------------------|-------------------------|
 | `POST` | `/join` | Join a game with a game id and a username. | 200, 400, 404, 409, 500 |
+| `GET` | `/lobby-ping` | Get a list of players and see if the game has started | 200, 400, 404, TODO |
+| `POST` | `/game-ping` | Update the server with a user's location and receive game status | 200, 400, 404, TODO |
+| `GET`  | `/hello-world` | Test your connection to the API.    | 200
 
 ## In-Depth Explanations
 
-### Getting all Chatrooms
+### Join a game
 `GET` `http://143.244.200.36:8080/join`
 
 
@@ -69,6 +73,10 @@ A `409` will be sent if the specified gameId is already in progress or has concl
   "path": "/join"
 }
 ```
+### Ping the server
+TODO
+
+# Example API Documentation from CS571 
 
 ### Getting Messages for Chatroom
 
