@@ -41,8 +41,8 @@ public class GameController {
 	}
 
 	@GetMapping("/check-hit")
-	public void checkHit(@RequestBody GeoData geoData) {
-		gameEventService.checkHit(geoData);
+	public boolean checkHit(@RequestBody GeoData geoData) {
+		return gameEventService.checkHit(geoData);
 	}
 
 	@GetMapping("/hello-world")

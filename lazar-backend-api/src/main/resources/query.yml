@@ -12,9 +12,13 @@ players:
   get:
     usernames: >
       SELECT username FROM players WHERE gameId = :id
+    by.playerId: >
+      SELECT * FROM players WHERE id = :id
   insert: >
     INSERT INTO players (id, gameId, username, health, isAdmin) VALUES (:id, :gameId, :username, :health, :isAdmin)
   update:
+    health:
+      UPDATE players SET health = health - :decrementBy WHERE id = :id;
   delete:
 
 geoData:
