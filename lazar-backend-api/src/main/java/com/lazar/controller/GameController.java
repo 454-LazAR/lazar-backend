@@ -20,9 +20,14 @@ public class GameController {
 	@Autowired
 	private GameEventService gameEventService;
 
-	@GetMapping("/")
-	public Ping ping(@RequestBody GeoData geoData) {
-		return gameEventService.ping(geoData);
+	@PostMapping("/game-ping")
+	public Ping gamePing(@RequestBody GeoData geoData) {
+		return gameEventService.gamePing(geoData);
+	}
+
+	@PostMapping("/lobby-ping")
+	public Ping lobbyPing(@RequestBody GeoData geoData) {
+		return gameEventService.lobbyPing(geoData);
 	}
 
 	@PostMapping("/create")

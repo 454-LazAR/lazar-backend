@@ -12,6 +12,8 @@ players:
   get:
     usernames: >
       SELECT username FROM players WHERE gameId = :id
+    health: >
+      SELECT health FROM players WHERE id = :id
   insert: >
     INSERT INTO players (id, gameId, username, health, isAdmin) VALUES (:id, :gameId, :username, :health, :isAdmin)
   update:
