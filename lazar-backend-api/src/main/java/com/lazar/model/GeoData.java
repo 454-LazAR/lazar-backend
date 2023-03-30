@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.UUID;
 
 @Data
@@ -50,14 +51,15 @@ public class GeoData implements Serializable {
     private String gameId;
     private Double longitude;
     private Double latitude;
-    private Timestamp timestamp;
+    private Instant timestamp;
     private Double heading;
 
+    // For converting from database response to backend object
     public GeoData(String playerId, String gameId, String longitude, String latitude, String timestamp) {
         this.playerId = UUID.fromString(playerId);
         this.gameId = gameId;
         this.longitude = Double.parseDouble(longitude);
         this.latitude = Double.parseDouble(latitude);
-        this.timestamp = Timestamp.valueOf(timestamp);
+        this.timestamp = Timestamp.valueOf(timestamp).toInstant();
     }
 }

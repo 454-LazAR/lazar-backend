@@ -19,7 +19,7 @@ import java.util.Optional;
 @Service
 public class GameEventService {
 
-    public static final Double HEADING_THRESHOLD = 0.0;
+    public static final Double HEADING_THRESHOLD = 10.0;
     public static final Long PING_INTERVAL = 1000L; // ms
     public static final Integer DAMAGE_PER_HIT = 20;
     public static final Long TIME_THRESHOLD = PING_INTERVAL*2; // ms
@@ -86,12 +86,12 @@ public class GameEventService {
         }
         playerLocations.sort(Comparator.comparing(GeoData::getHeading));
 
-        if (playerLocations.get(0).getHeading() > HEADING_THRESHOLD && playerLocations.get(0).getHeading() < 360 - HEADING_THRESHOLD) {
+        if (playerLocations.isEmpty() || (playerLocations.get(0).getHeading() > HEADING_THRESHOLD && playerLocations.get(0).getHeading() < 360 - HEADING_THRESHOLD)) {
             return false;
         }
 
         int decrementBy = DAMAGE_PER_HIT;
-        if(!playerRepository.updateHealth(geoData.getPlayerId(), decrementBy)){
+        if(!playerRepository.updateHealth(playerLocations.get(0).getPlayerId(), decrementBy)){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating player in database.");
         }
 

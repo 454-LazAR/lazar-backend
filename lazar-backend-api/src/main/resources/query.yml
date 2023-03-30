@@ -26,6 +26,11 @@ players:
 geoData:
   get:
     in.range: >
-      SELECT * FROM geoData WHERE gameId = :gameId AND playerId != :id 
-      AND timestamp BETWEEN :min AND :max GROUP BY playerId 
-      ORDER BY timestamp DESC LIMIT 1
+      SELECT g.playerId, g.gameId, g.longitude, g.latitude, g.timeReceived
+      FROM geoData g
+      INNER JOIN (
+        SELECT playerId, MAX(timeReceived) as maxTimestamp
+        FROM geoData
+        WHERE gameId = :gameId AND playerId != :playerId AND timeReceived BETWEEN :min AND :max
+        GROUP BY playerId
+      ) t ON g.playerId = t.playerId AND g.timeReceived = t.maxTimestamp;
