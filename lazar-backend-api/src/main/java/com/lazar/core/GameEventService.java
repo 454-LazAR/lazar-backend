@@ -19,10 +19,10 @@ import java.util.Optional;
 @Service
 public class GameEventService {
 
-    private static final Double HEADING_THRESHOLD = 0.0;
-    private static final Double PING_INTERVAL = 0.0;
-    private static final Double TIME_THRESHOLD = PING_INTERVAL*3;
-    private static final Integer DAMAGE_PER_HIT = 20;
+    public static final Double HEADING_THRESHOLD = 0.0;
+    public static final Long PING_INTERVAL = 1000L; // ms
+    public static final Integer DAMAGE_PER_HIT = 20;
+    public static final Long TIME_THRESHOLD = PING_INTERVAL*2; // ms
 
     @Autowired
     private PlayerRepository playerRepository;
@@ -74,11 +74,8 @@ public class GameEventService {
 
     public boolean checkHit(GeoData geoData) {
         // Find game id, update geoData object
-        Optional<Player> player = playerRepository.getPlayerById(geoData.getPlayerId());
-        if(player.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Must specify valid player UUID.");
-        }
-        geoData.setGameId(player.get().getGameId());
+        Player player = checkValidPlayerId(geoData);
+        geoData.setGameId(player.getGameId());
 
         // Get a list of all players geo data
         List<GeoData> playerLocations = geoDataRepository.getGeoDataForHitCheck(geoData);
@@ -89,7 +86,7 @@ public class GameEventService {
         }
         playerLocations.sort(Comparator.comparing(GeoData::getHeading));
 
-        if(playerLocations.get(0).getHeading() > HEADING_THRESHOLD) {
+        if (playerLocations.get(0).getHeading() > HEADING_THRESHOLD && playerLocations.get(0).getHeading() < 360 - HEADING_THRESHOLD) {
             return false;
         }
 

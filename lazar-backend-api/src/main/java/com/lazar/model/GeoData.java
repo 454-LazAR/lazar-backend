@@ -50,6 +50,14 @@ public class GeoData implements Serializable {
     private String gameId;
     private Double longitude;
     private Double latitude;
-    private Double heading;
     private Timestamp timestamp;
+    private Double heading;
+
+    public GeoData(String playerId, String gameId, String longitude, String latitude, String timestamp) {
+        this.playerId = UUID.fromString(playerId);
+        this.gameId = gameId;
+        this.longitude = Double.parseDouble(longitude);
+        this.latitude = Double.parseDouble(latitude);
+        this.timestamp = Timestamp.valueOf(timestamp);
+    }
 }

@@ -27,5 +27,5 @@ geoData:
   get:
     in.range: >
       SELECT * FROM geoData WHERE gameId = :gameId AND playerId != :id 
-      AND timestamp BETWEEN :start AND :end GROUP BY playerId 
+      AND timestamp BETWEEN :min AND :max GROUP BY playerId 
       ORDER BY timestamp DESC LIMIT 1
