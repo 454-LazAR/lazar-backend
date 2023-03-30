@@ -23,7 +23,7 @@ public class GeoDataRepository {
     public List<GeoData> getGeoDataForHitCheck(GeoData shooterData) {
         Instant timestamp = shooterData.getTimestamp();
         Timestamp min = Timestamp.from(timestamp.minusMillis(GameEventService.TIME_THRESHOLD));
-        Timestamp max = Timestamp.from(timestamp.plusMillis(GameEventService.TIME_THRESHOLD));
+        Timestamp max = Timestamp.from(timestamp);
         return jdbi.withHandle(h -> h.createQuery(queries.getProperty("geoData.get.in.range"))
                 .bind("gameId", shooterData.getGameId())
                 .bind("playerId", shooterData.getPlayerId())

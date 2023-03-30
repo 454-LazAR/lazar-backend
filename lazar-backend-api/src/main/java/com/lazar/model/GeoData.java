@@ -49,8 +49,8 @@ public class GeoData implements Serializable {
 
     private UUID playerId;
     private String gameId;
-    private Double longitude;
     private Double latitude;
+    private Double longitude;
     private Instant timestamp;
     private Double heading;
 

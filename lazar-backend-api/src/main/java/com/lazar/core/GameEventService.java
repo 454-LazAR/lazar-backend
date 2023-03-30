@@ -22,7 +22,7 @@ public class GameEventService {
     public static final Double HEADING_THRESHOLD = 10.0;
     public static final Long PING_INTERVAL = 1000L; // ms
     public static final Integer DAMAGE_PER_HIT = 20;
-    public static final Long TIME_THRESHOLD = PING_INTERVAL*2; // ms
+    public static final Long TIME_THRESHOLD = PING_INTERVAL*3; // ms
 
     @Autowired
     private PlayerRepository playerRepository;
@@ -81,12 +81,15 @@ public class GameEventService {
         List<GeoData> playerLocations = geoDataRepository.getGeoDataForHitCheck(geoData);
         for(GeoData playerLocation : playerLocations) {
             // Calculate relative heading from the shooter.
-            // Store as the absolute value of the difference between shooter heading and shootee
-            playerLocation.setHeading(Math.abs(geoData.getHeading() - geoData.bearingTo(playerLocation)));
+            Double diff = Math.abs(geoData.getHeading() - geoData.bearingTo(playerLocation));
+            if (diff > 180) {
+                diff = 360 - diff;
+            }
+            playerLocation.setHeading(diff);
         }
         playerLocations.sort(Comparator.comparing(GeoData::getHeading));
 
-        if (playerLocations.isEmpty() || (playerLocations.get(0).getHeading() > HEADING_THRESHOLD && playerLocations.get(0).getHeading() < 360 - HEADING_THRESHOLD)) {
+        if (playerLocations.isEmpty() || playerLocations.get(0).getHeading() > HEADING_THRESHOLD) {
             return false;
         }
 
