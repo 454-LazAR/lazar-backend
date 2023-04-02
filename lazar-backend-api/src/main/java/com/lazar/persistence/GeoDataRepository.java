@@ -23,4 +23,17 @@ public class GeoDataRepository {
         return null;
     }
 
+    // TODO Drew, please check this query out and make sure it looks right.
+    //  I'm assuming we want to just enter a new row for each ping instead of updating one row for each player?
+    public boolean insertPing(GeoData data) {
+        Integer status = jdbi.withHandle(h -> h.createUpdate(queries.getProperty("geoData.add.ping"))
+            .bind("playerId", data.getPlayerId())
+            .bind("gameId", data.getGameId())
+            .bind("longitude", data.getLongitude())
+            .bind("latitude", data.getLatitude())
+            .bind("timeReceived", data.getTimestamp())
+            .execute());
+        return status == 1;
+    }
+
 }

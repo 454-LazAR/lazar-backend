@@ -79,7 +79,15 @@ public class GameEventService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Player health not found in database.");
         }
 
-        // TODO update database with player location and timestamp
+        // ensure valid longitude, latitude, timestamp
+        if (geoData.getLongitude() == null || geoData.getLatitude() == null || geoData.getTimestamp() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Must specify longitude, latitude, and timestamp.");
+        }
+        // update database with player location and timestamp via populating and passing the geoData object
+        geoData.setGameId(game.getId());
+        if (!geoDataRepository.insertPing(geoData)) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred inserting the ping into the DB.");
+        }
 
         return new Ping(game.getGameStatus(), health.get(), null);
     }
