@@ -107,7 +107,7 @@ public class GameAdminService {
         }
         // check that we're in lobby still
         if (game.getGameStatus() != Game.GameStatus.IN_LOBBY) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot start a game if not in lobby.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot start a game if not in lobby.");
         }
 
         if (!gameRepository.startGame(player.getGameId(), Game.GameStatus.IN_PROGRESS)) {
