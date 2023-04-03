@@ -81,7 +81,7 @@ public class GameEventService {
         List<GeoData> playerLocations = geoDataRepository.getGeoDataForHitCheck(geoData);
         for(GeoData playerLocation : playerLocations) {
             // Calculate relative heading from the shooter.
-            Double diff = Math.abs(geoData.getHeading() - geoData.bearingTo(playerLocation));
+            double diff = Math.abs(geoData.getHeading() - geoData.bearingTo(playerLocation));
             if (diff > 180) {
                 diff = 360 - diff;
             }
