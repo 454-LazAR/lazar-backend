@@ -13,7 +13,16 @@ CREATE TABLE players (
 	gameId VARCHAR(6),
 	username VARCHAR(30),
 	health INT,
-	isAdmin BOOLEAN,
-	-- GPS Data
-	FOREIGN KEY (gameId) REFERENCES games(id)
+	isAdmin BOOLEAN DEFAULT false,
+	FOREIGN KEY (gameId) REFERENCES games(id) ON DELETE CASCADE
+);
+
+CREATE TABLE geoData (
+	playerId VARCHAR(36),
+	gameId VARCHAR(6),
+	latitude DOUBLE,
+	longitude DOUBLE,
+	timeReceived TIMESTAMP,
+	FOREIGN KEY (playerId) REFERENCES players(id) ON DELETE CASCADE,
+	FOREIGN KEY (gameId) REFERENCES games(id) ON DELETE CASCADE
 );

@@ -13,7 +13,7 @@ import java.io.Serializable;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class Game implements Serializable {
     public enum GameStatus {
-        IN_PROGRESS, IN_LOBBY, COMPLETE
+        IN_PROGRESS, IN_LOBBY, FINISHED
     }
     private String id;
     private GameStatus gameStatus;
