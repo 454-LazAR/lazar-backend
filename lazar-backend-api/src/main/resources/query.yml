@@ -6,6 +6,7 @@ games:
   insert: >
     INSERT INTO games (id, gameStatus) VALUES (:id, "IN_LOBBY")
   update:
+    UPDATE games SET gameStatus = :gameStatus WHERE id = :id
   delete:
 
 players:

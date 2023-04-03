@@ -1,6 +1,7 @@
 package com.lazar.core;
 
 import com.lazar.model.Game;
+import com.lazar.model.GeoData;
 import com.lazar.model.Player;
 import com.lazar.persistence.GameRepository;
 import com.lazar.persistence.PlayerRepository;
@@ -26,6 +27,16 @@ public class GameAdminService {
 
     @Autowired
     private GameRepository gameRepository;
+
+    // This is basically the same as the one from GameEventService.java. Feels lame to copy and paste,
+    // but idk how else to reuse the code since it can't be made a static method.
+    private Player checkValidPlayerId(GeoData geoData) {
+        Optional<Player> player = playerRepository.getPlayerById(geoData.getPlayerId());
+        if (player.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid player ID.");
+        }
+        return player.get();
+    }
 
     private static String generateUniqueGameId() {
         byte[] randomBytes = new byte[10];
@@ -73,7 +84,15 @@ public class GameAdminService {
         return new Player(playerDetails.getId(), playerDetails.getGameId());
     }
 
-    public Player start() {
-        return null;
+    public Player start(GeoData geoData) {
+        Player player = checkValidPlayerId(geoData);
+        // ensure player is authorized to start the game
+        if (!player.getIsAdmin()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only the game admin can start the game.");
+        }
+        if (!gameRepository.startGame(player.getGameId(), Game.GameStatus.IN_PROGRESS)) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error starting game.");
+        }
+        return player;
     }
 }

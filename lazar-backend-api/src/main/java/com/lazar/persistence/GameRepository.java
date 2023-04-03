@@ -31,4 +31,12 @@ public class GameRepository {
         return status == 1;
     }
 
+    public boolean startGame(String gameId, Game.GameStatus gameStatus) {
+        Integer status = jdbi.withHandle(h -> h.createUpdate(queries.getProperty("games.start"))
+            .bind("id", gameId)
+            .bind("gameStatus", gameStatus)
+            .execute());
+        return status == 1;
+    }
+
 }
