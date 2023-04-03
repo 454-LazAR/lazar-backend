@@ -6,6 +6,7 @@ games:
   insert: >
     INSERT INTO games (id, gameStatus) VALUES (:id, "IN_LOBBY")
   update:
+    UPDATE games SET gameStatus = :gameStatus WHERE id = :id
   delete:
 
 players:
@@ -24,6 +25,8 @@ players:
   delete:
 
 geoData:
+  add.ping:
+    INSERT INTO geoData (playerId, gameId, longitude, latitude, timeReceived) VALUES (:playerId, :gameId, :longitude, :latitude, :timeReceived)
   get:
     in.range: >
       SELECT g.playerId, g.gameId, g.longitude, g.latitude, g.timeReceived
