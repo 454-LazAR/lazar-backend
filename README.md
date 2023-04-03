@@ -15,6 +15,7 @@ All game-functionality requests must have a valid player UUID.
 | `POST` | `/join` | Join a game with a game id and a username. | 200, 400, 404, 409, 500 |
 | `GET` | `/lobby-ping` | Get a list of players and see if the game has started | 200, 400, 404, TODO |
 | `POST` | `/game-ping` | Update the server with a user's location and receive game status | 200, 400, 404, TODO |
+| `POST` | `/start` | Start the game | 200, 400, 401, 403, 404, 409, 500
 | `GET`  | `/hello-world` | Test your connection to the API.    | 200
 
 ## In-Depth Explanations
@@ -73,6 +74,90 @@ A `409` will be sent if the specified gameId is already in progress or has concl
   "path": "/join"
 }
 ```
+
+### Start a game
+`POST` `http://143.244.200.36:8080/start`
+
+
+**Example Request Body**
+
+```json
+{
+  "playerId": "64a4747a-5e64-4959-9918-a41fce099320",
+}
+```
+
+A `200` will be sent with a boolean indicating that the game was started successfully.
+```json
+true
+```
+
+A `400` will be sent if `playerId` is invalid/doesn't exist.
+```json
+{
+  "timestamp": "2023-03-28T06:08:56.777+00:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Invalid player ID.",
+  "path": "/start"
+}
+```
+
+A `401` will be sent if `playerId` isn't the game admin.
+```json
+{
+  "timestamp": "2023-03-28T06:08:56.777+00:00",
+  "status": 401,
+  "error": "Unauthorized",
+  "message": "Only the game admin can start the game.",
+  "path": "/start"
+}
+```
+
+A `403` will be sent if there aren't at least 2 players in the game.
+```json
+{
+  "timestamp": "2023-03-28T06:08:56.777+00:00",
+  "status": 403,
+  "error": "Forbidden",
+  "message": "Cannot start a game with less than 2 users.",
+  "path": "/start"
+}
+```
+
+A `404` will be sent if the Game object associated with the `playerId` can't be found.
+```json
+{
+  "timestamp": "2023-03-28T06:10:25.918+00:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Game doesn't exist.",
+  "path": "/start"
+}
+```
+
+A `409` will be sent if the game associated with `playerId` does not have a status of  `IN_LOBBY`.
+```json
+{
+  "timestamp": "2023-03-28T06:11:46.455+00:00",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Cannot start a game if not in lobby.",
+  "path": "/start"
+}
+```
+
+A `500` will be sent if the server encounters any other errors, especially related to updating the game's status to `IN_PROGRESS`.
+```json
+{
+  "timestamp": "2023-03-28T06:08:56.777+00:00",
+  "status": 500,
+  "error": "Internal Server Error",
+  "message": "Error starting game.",
+  "path": "/start"
+}
+```
+
 ### Ping the server
 TODO
 
