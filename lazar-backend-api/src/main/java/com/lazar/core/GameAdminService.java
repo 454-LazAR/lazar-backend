@@ -90,6 +90,7 @@ public class GameAdminService {
         if (!player.getIsAdmin()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only the game admin can start the game.");
         }
+        // TODO check that there are at least 2 players in the game
         if (!gameRepository.startGame(player.getGameId(), Game.GameStatus.IN_PROGRESS)) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error starting game.");
         }

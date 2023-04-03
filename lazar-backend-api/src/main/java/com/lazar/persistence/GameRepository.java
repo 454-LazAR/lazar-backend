@@ -32,9 +32,9 @@ public class GameRepository {
     }
 
     public boolean startGame(String gameId, Game.GameStatus gameStatus) {
-        Integer status = jdbi.withHandle(h -> h.createUpdate(queries.getProperty("games.start"))
+        Integer status = jdbi.withHandle(h -> h.createUpdate(queries.getProperty("games.update"))
             .bind("id", gameId)
-            .bind("gameStatus", gameStatus)
+            .bind("gameStatus", gameStatus.toString())
             .execute());
         return status == 1;
     }
