@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class GameAdminService {
     @Autowired
     private GameRepository gameRepository;
 
-    // This is basically the same as the one from GameEventService.java. Feels lame to copy and paste,
+    // These are basically the same as the methods from GameEventService.java. Feels lame to copy and paste,
     // but idk how else to reuse the code since it can't be made a static method.
     private Player checkValidPlayerId(GeoData geoData) {
         Optional<Player> player = playerRepository.getPlayerById(geoData.getPlayerId());
@@ -36,6 +37,13 @@ public class GameAdminService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid player ID.");
         }
         return player.get();
+    }
+    private Game getGameFromPlayerId(Player player) {
+        Optional<Game> currGame = gameRepository.getGame(player.getGameId());
+        if (currGame.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game doesn't exist.");
+        }
+        return currGame.get();
     }
 
     private static String generateUniqueGameId() {
@@ -90,7 +98,18 @@ public class GameAdminService {
         if (!player.getIsAdmin()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only the game admin can start the game.");
         }
-        // TODO check that there are at least 2 players in the game
+
+        Game game = getGameFromPlayerId(player);
+        // check that there are at least 2 players in the game
+        List<String> players = playerRepository.getUsernamesByGame(game.getId());
+        if (players.size() < 2) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot start a game with less than 2 users.");
+        }
+        // check that we're in lobby still
+        if (game.getGameStatus() != Game.GameStatus.IN_LOBBY) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot start a game if not in lobby.");
+        }
+
         if (!gameRepository.startGame(player.getGameId(), Game.GameStatus.IN_PROGRESS)) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error starting game.");
         }
