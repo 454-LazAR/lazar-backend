@@ -31,4 +31,5 @@ public class Player implements Serializable {
         this.health = Integer.parseInt(health);
         this.isAdmin = Boolean.getBoolean(isAdmin);
     }
+
 }

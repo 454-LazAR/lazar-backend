@@ -8,6 +8,7 @@ The backend server's configuration files and API code
 
 All routes are relative to `http://143.244.200.36:8080` (Prod) or `http://localhost:8080` (Dev)
 
+<<<<<<< HEAD
 All game-functionality requests must have a valid player UUID.
 
 | Method | URL     | Purpose                                    | Return Codes            |
@@ -20,6 +21,15 @@ All game-functionality requests must have a valid player UUID.
 ## In-Depth Explanations
 
 ### Join a game
+=======
+| Method | URL     | Purpose                                    | Return Codes            |
+|--------|---------|--------------------------------------------|-------------------------|
+| `POST` | `/join` | Join a game with a game id and a username. | 200, 400, 404, 409, 500 |
+
+## In-Depth Explanations
+
+### Getting all Chatrooms
+>>>>>>> main
 `GET` `http://143.244.200.36:8080/join`
 
 
@@ -31,6 +41,50 @@ All game-functionality requests must have a valid player UUID.
   "username": "drew",
   "gameId": "100"
 }
+<<<<<<< HEAD
+=======
+```
+
+A `200` will be sent with the player's UUID and gameId.
+```json
+{
+  "id": "64a4747a-5e64-4959-9918-a41fce099320",
+  "gameId": 100
+}
+```
+
+A `400` will be sent if username or gameid are not specified.
+```json
+{
+  "timestamp": "2023-03-28T06:08:56.777+00:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Must specify gameId and username.",
+  "path": "/join"
+}
+```
+
+A `404` will be sent if the specified gameId is not valid (there is no game that exists with that ID).
+```json
+{
+  "timestamp": "2023-03-28T06:10:25.918+00:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Game does not exist.",
+  "path": "/join"
+}
+```
+
+A `409` will be sent if the specified gameId is already in progress or has concluded.
+```json
+{
+  "timestamp": "2023-03-28T06:11:46.455+00:00",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Game is already in progress or has completed.",
+  "path": "/join"
+}
+>>>>>>> main
 ```
 
 A `200` will be sent with the player's UUID and gameId.
