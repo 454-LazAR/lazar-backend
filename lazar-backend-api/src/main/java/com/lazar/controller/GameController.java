@@ -35,9 +35,8 @@ public class GameController {
 		return gameAdminService.create(player);
 	}
 
-	// TODO why does this return a Player object? Could we just return a boolean indicating that the game was started or not?
 	@PostMapping("/start")
-	public Player startGame(@RequestBody GeoData geoData) { // request takes in geoData, but we really only need the player UUID
+	public boolean startGame(@RequestBody GeoData geoData) { // request takes in geoData, but we really only need the player UUID
 		return gameAdminService.start(geoData);
 	}
 

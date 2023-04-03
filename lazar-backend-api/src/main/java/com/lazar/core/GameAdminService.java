@@ -84,7 +84,7 @@ public class GameAdminService {
         return new Player(playerDetails.getId(), playerDetails.getGameId());
     }
 
-    public Player start(GeoData geoData) {
+    public boolean start(GeoData geoData) {
         Player player = checkValidPlayerId(geoData);
         // ensure player is authorized to start the game
         if (!player.getIsAdmin()) {
@@ -94,6 +94,6 @@ public class GameAdminService {
         if (!gameRepository.startGame(player.getGameId(), Game.GameStatus.IN_PROGRESS)) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error starting game.");
         }
-        return player;
+        return true;
     }
 }

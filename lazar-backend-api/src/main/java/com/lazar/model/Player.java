@@ -29,6 +29,6 @@ public class Player implements Serializable {
         this.gameId = gameId;
         this.username = username;
         this.health = Integer.parseInt(health);
-        this.isAdmin = Integer.parseInt(isAdmin) == 1;
+        this.isAdmin = isAdmin != null && Integer.parseInt(isAdmin) == 1;
     }
 }
