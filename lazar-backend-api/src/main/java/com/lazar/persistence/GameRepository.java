@@ -31,7 +31,7 @@ public class GameRepository {
         return status == 1;
     }
 
-    public boolean startGame(String gameId, Game.GameStatus gameStatus) {
+    public boolean updateGameStatus(String gameId, Game.GameStatus gameStatus) {
         Integer status = jdbi.withHandle(h -> h.createUpdate(queries.getProperty("games.update"))
             .bind("id", gameId)
             .bind("gameStatus", gameStatus.toString())

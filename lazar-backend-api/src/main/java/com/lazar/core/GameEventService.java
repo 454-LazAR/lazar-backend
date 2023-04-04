@@ -14,9 +14,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
+import static com.lazar.LazarApplication.DEBUG_MODE;
 
 @Service
 public class GameEventService {
@@ -25,7 +25,7 @@ public class GameEventService {
     public static final Long PING_INTERVAL = 1000L; // ms
     public static final Integer DAMAGE_PER_HIT = 20;
     public static final Long TIME_THRESHOLD = PING_INTERVAL*3; // ms
-    public static final Long TIMEOUT = 15000L; // ms
+    public static final Long TIMEOUT = PING_INTERVAL*15; // ms
 
     @Autowired
     private PlayerRepository playerRepository;
@@ -104,6 +104,10 @@ public class GameEventService {
         Player player = checkValidPlayerId(geoData);
         geoData.setGameId(player.getGameId());
 
+        if(player.getHealth() == 0) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Player is already dead.");
+        }
+
         Optional<Game> game = gameRepository.getGame(player.getGameId());
         if(game.isPresent() && game.get().getGameStatus() != Game.GameStatus.IN_PROGRESS) {
             return false;
@@ -121,40 +125,49 @@ public class GameEventService {
         }
         playerLocations.sort(Comparator.comparing(GeoData::getHeading));
 
-        if (playerLocations.isEmpty() || playerLocations.get(0).getHeading() > HEADING_THRESHOLD) {
+        GeoData hitPlayer = playerLocations.isEmpty() ? null : playerLocations.get(0);
+        int hitPlayersHealth = getPlayersHealthAndCheckGameOver(game.get(), hitPlayer == null ? null : hitPlayer.getPlayerId());
+        if (hitPlayer == null || hitPlayersHealth == 0 || hitPlayer.getHeading() > HEADING_THRESHOLD) {
             return false;
         }
 
         int decrementBy = DAMAGE_PER_HIT;
-        if(!playerRepository.updateHealth(playerLocations.get(0).getPlayerId(), decrementBy)){
+        if(!playerRepository.updateHealth(hitPlayer.getPlayerId(), decrementBy)){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating player in database.");
         }
 
-        checkGameOver(game.get());
+        if(hitPlayersHealth - decrementBy <= 0) {
+            gameRepository.updateGameStatus(game.get().getId(), Game.GameStatus.FINISHED);
+        }
 
         return true;
     }
 
     // This would be much simpler with websockets I think
-    private void checkGameOver(Game game) {
+    // Fetches all players from a game, returns the health of the player with id = playerId
+    // Detects inactive players, sets their health to 0
+    private int getPlayersHealthAndCheckGameOver(Game game, UUID playerId) {
         List<Player> players = playerRepository.getPlayerLatestData(game.getId());
-
-        // Create batch of updates
-
-        boolean endGame = true;
+        List<UUID> inactivePlayers = new ArrayList<>();
+        int playerHealth = 0;
+        int numAlivePlayers = 0;
         for(Player player : players) {
-            if(player.getHealth() != 0){
-                endGame = false;
-            } else if (Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT) {
-                // Set this player's health to 0. Add update to batch
-                endGame = false;
+            if(!DEBUG_MODE && Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT){
+                inactivePlayers.add(player.getId());
+            } else if (player.getHealth() != 0) {
+                numAlivePlayers++;
+                if(player.getId().equals(playerId)) {
+                    playerHealth = player.getHealth();
+                }
             }
         }
-        if(endGame) {
-            // Add update game status to COMPLETE to batch
+        if(!inactivePlayers.isEmpty()){
+            playerRepository.killInactivePlayers(inactivePlayers);
         }
-
-        // execute batch
+        if(numAlivePlayers <= 1) {
+            gameRepository.updateGameStatus(game.getId(), Game.GameStatus.FINISHED);
+        }
+        return playerHealth;
     }
 
 }
