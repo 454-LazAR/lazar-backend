@@ -25,7 +25,7 @@ public class GameController {
 		return gameEventService.gamePing(geoData);
 	}
 
-	@PostMapping("/lobby-ping")
+	@GetMapping("/lobby-ping")
 	public Ping lobbyPing(@RequestBody GeoData geoData) {
 		return gameEventService.lobbyPing(geoData);
 	}
