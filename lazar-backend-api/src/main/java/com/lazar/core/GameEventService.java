@@ -110,7 +110,7 @@ public class GameEventService {
 
         Optional<Game> game = gameRepository.getGame(player.getGameId());
         if(game.isPresent() && game.get().getGameStatus() != Game.GameStatus.IN_PROGRESS) {
-            return false;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game is still in the lobby or has finished.");
         }
 
         // Get a list of all players geo data
