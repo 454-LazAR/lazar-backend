@@ -64,13 +64,17 @@ public class GameEventService {
         }
         // Game has started, return in-game ping so the user knows the game has started
         else {
-            return gamePing(geoData);
+            return new Ping(currGame.getGameStatus(), player.getHealth(), null);
         }
     }
 
     public Ping gamePing(GeoData geoData) {
         Player player = checkValidPlayerId(geoData);
         Game game = getGameFromPlayerId(player);
+
+        if(game.getGameStatus() == Game.GameStatus.IN_LOBBY) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has not started.");
+        }
 
         // get health
         Optional<Integer> health = playerRepository.getPlayerHealth(geoData.getPlayerId());
@@ -96,6 +100,11 @@ public class GameEventService {
         // Find game id, update geoData object
         Player player = checkValidPlayerId(geoData);
         geoData.setGameId(player.getGameId());
+
+        Optional<Game> game = gameRepository.getGame(player.getGameId());
+        if(game.isPresent() && game.get().getGameStatus() != Game.GameStatus.IN_PROGRESS) {
+            return false;
+        }
 
         // Get a list of all players geo data
         List<GeoData> playerLocations = geoDataRepository.getGeoDataForHitCheck(geoData);

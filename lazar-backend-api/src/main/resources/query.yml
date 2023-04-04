@@ -21,7 +21,7 @@ players:
     INSERT INTO players (id, gameId, username, health, isAdmin) VALUES (:id, :gameId, :username, :health, :isAdmin)
   update:
     health:
-      UPDATE players SET health = health - :decrementBy WHERE id = :id;
+      UPDATE players SET health = GREATEST(health - :decrementBy, 0) WHERE id = :id;
   delete:
 
 geoData:
