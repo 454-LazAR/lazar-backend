@@ -17,6 +17,12 @@ players:
       SELECT * FROM players WHERE id = :id
     health: >
       SELECT health FROM players WHERE id = :id
+    by.gameId: >
+      SELECT p.health, p.id, MAX(g.timeReceived) AS lastUpdateTime
+      FROM players p
+      JOIN geoData g ON p.id = g.playerId
+      WHERE p.gameId = :gameId
+      GROUP BY p.id;
   insert: >
     INSERT INTO players (id, gameId, username, health, isAdmin) VALUES (:id, :gameId, :username, :health, :isAdmin)
   update:

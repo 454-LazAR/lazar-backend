@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +25,7 @@ public class GameEventService {
     public static final Long PING_INTERVAL = 1000L; // ms
     public static final Integer DAMAGE_PER_HIT = 20;
     public static final Long TIME_THRESHOLD = PING_INTERVAL*3; // ms
+    public static final Long TIMEOUT = 15000L; // ms
 
     @Autowired
     private PlayerRepository playerRepository;
@@ -127,11 +130,31 @@ public class GameEventService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating player in database.");
         }
 
+        checkGameOver(game.get());
+
         return true;
     }
 
-    private void checkGameOver() {
+    // This would be much simpler with websockets I think
+    private void checkGameOver(Game game) {
+        List<Player> players = playerRepository.getPlayerLatestData(game.getId());
 
+        // Create batch of updates
+
+        boolean endGame = true;
+        for(Player player : players) {
+            if(player.getHealth() != 0){
+                endGame = false;
+            } else if (Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT) {
+                // Set this player's health to 0. Add update to batch
+                endGame = false;
+            }
+        }
+        if(endGame) {
+            // Add update game status to COMPLETE to batch
+        }
+
+        // execute batch
     }
 
 }

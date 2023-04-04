@@ -55,4 +55,11 @@ public class PlayerRepository {
             .findOne()
         );
     }
+
+    public List<Player> getPlayerLatestData(String gameId) {
+        return jdbi.withHandle(h -> h.createQuery(queries.getProperty("players.get.recent"))
+                .bind("gameId", gameId)
+                .map((r,c) -> new Player(r.getString(1), r.getString(2), r.getString(3)))
+                .list());
+    }
 }
