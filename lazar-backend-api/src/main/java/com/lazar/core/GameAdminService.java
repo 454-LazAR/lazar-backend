@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.lazar.LazarApplication.DEBUG_MODE;
+
 @Service
 public class GameAdminService {
 
@@ -95,7 +97,7 @@ public class GameAdminService {
     public boolean start(GeoData geoData) {
         Player player = checkValidPlayerId(geoData);
         // ensure player is authorized to start the game
-        if (!player.getIsAdmin()) {
+        if (!DEBUG_MODE && !player.getIsAdmin()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only the game admin can start the game.");
         }
 
@@ -110,7 +112,7 @@ public class GameAdminService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot start a game if not in lobby.");
         }
 
-        if (!gameRepository.startGame(player.getGameId(), Game.GameStatus.IN_PROGRESS)) {
+        if (!gameRepository.updateGameStatus(player.getGameId(), Game.GameStatus.IN_PROGRESS)) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error starting game.");
         }
         return true;

@@ -2,7 +2,9 @@ package com.lazar.persistence;
 
 import com.lazar.model.Game;
 import com.lazar.model.Player;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.statement.PreparedBatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -54,5 +56,24 @@ public class PlayerRepository {
             .mapTo(Integer.class)
             .findOne()
         );
+    }
+
+    public List<Player> getPlayerLatestData(String gameId) {
+        return jdbi.withHandle(h -> h.createQuery(queries.getProperty("players.get.recent"))
+                .bind("gameId", gameId)
+                .map((r,c) -> new Player(r.getString(1), r.getString(2), r.getString(3)))
+                .list());
+    }
+
+    public boolean killInactivePlayers(List<UUID> players) {
+        int[] status;
+        try(Handle h = jdbi.open()) {
+            PreparedBatch batch = h.prepareBatch(queries.getProperty("players.update.inactive"));
+            for(UUID id : players) {
+                batch.bind("id", id.toString()).add();
+            }
+            status = batch.execute();
+        }
+        return status.length > 0;
     }
 }

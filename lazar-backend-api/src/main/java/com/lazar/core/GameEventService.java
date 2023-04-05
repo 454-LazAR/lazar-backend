@@ -1,9 +1,6 @@
 package com.lazar.core;
 
-import com.lazar.model.Game;
-import com.lazar.model.GeoData;
-import com.lazar.model.Ping;
-import com.lazar.model.Player;
+import com.lazar.model.*;
 import com.lazar.persistence.GameRepository;
 import com.lazar.persistence.GeoDataRepository;
 import com.lazar.persistence.PlayerRepository;
@@ -12,9 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
+
+import static com.lazar.LazarApplication.DEBUG_MODE;
 
 @Service
 public class GameEventService {
@@ -23,6 +22,7 @@ public class GameEventService {
     public static final Long PING_INTERVAL = 1000L; // ms
     public static final Integer DAMAGE_PER_HIT = 20;
     public static final Long TIME_THRESHOLD = PING_INTERVAL*3; // ms
+    public static final Long TIMEOUT = PING_INTERVAL*15; // ms
 
     @Autowired
     private PlayerRepository playerRepository;
@@ -101,9 +101,13 @@ public class GameEventService {
         Player player = checkValidPlayerId(geoData);
         geoData.setGameId(player.getGameId());
 
+        if(player.getHealth() == 0) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Player is already dead.");
+        }
+
         Optional<Game> game = gameRepository.getGame(player.getGameId());
         if(game.isPresent() && game.get().getGameStatus() != Game.GameStatus.IN_PROGRESS) {
-            return false;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game is still in the lobby or has finished.");
         }
 
         // Get a list of all players geo data
@@ -118,20 +122,68 @@ public class GameEventService {
         }
         playerLocations.sort(Comparator.comparing(GeoData::getHeading));
 
-        if (playerLocations.isEmpty() || playerLocations.get(0).getHeading() > HEADING_THRESHOLD) {
+        GeoData hitPlayer = playerLocations.isEmpty() ? null : playerLocations.get(0);
+        GameInfo gameInfo = checkGameOver(game.get(), hitPlayer == null ? null : hitPlayer.getPlayerId());
+        if (gameInfo.getStatus() == Game.GameStatus.FINISHED || hitPlayer.getHeading() > HEADING_THRESHOLD) {
             return false;
         }
 
         int decrementBy = DAMAGE_PER_HIT;
-        if(!playerRepository.updateHealth(playerLocations.get(0).getPlayerId(), decrementBy)){
+        if(!playerRepository.updateHealth(hitPlayer.getPlayerId(), decrementBy)){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating player in database.");
+        }
+
+        if(gameInfo.getNumAlivePlayers() == 2 && gameInfo.getFocusPlayerHealth() - decrementBy <= 0) {
+            gameRepository.updateGameStatus(game.get().getId(), Game.GameStatus.FINISHED);
         }
 
         return true;
     }
 
-    private void checkGameOver() {
+    /**
+     *
+     * Checks for the game over status, while returning an object containing information
+     * relevant to the specified game object. To receive meaningful data, the focus player
+     * UUID MUST belong to the corresponding game object. If you don't care about the focus
+     * player, set the focusPlayerId parameter to null and ignore the corresponding field in
+     * the return object.
+     *
+     * @param game Game object.
+     * @param focusPlayerId Can be any alive player. Usually should be the player whose health
+     *                      is about to be decremented.
+     * @return Information regarding game state. Includes status, number of alive players remaining
+     * and the health of the focus player.
+     */
+    private GameInfo checkGameOver(Game game, UUID focusPlayerId) {
+        List<Player> players = playerRepository.getPlayerLatestData(game.getId());
 
+        List<UUID> inactivePlayers = new ArrayList<>();
+        int numAlivePlayers = 0;
+        GameInfo gameInfo = new GameInfo();
+        gameInfo.setGame(game);
+
+        for(Player player : players) {
+            if(!DEBUG_MODE && Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT){
+                inactivePlayers.add(player.getId());
+            } else {
+                numAlivePlayers++;
+                if(player.getId().equals(focusPlayerId)) {
+                    gameInfo.setFocusPlayerHealth(player.getHealth());
+                }
+            }
+        }
+        gameInfo.setNumAlivePlayers(numAlivePlayers);
+
+        if(!inactivePlayers.isEmpty()){
+            playerRepository.killInactivePlayers(inactivePlayers);
+        }
+
+        if(numAlivePlayers <= 1) {
+            gameInfo.setStatus(Game.GameStatus.FINISHED);
+            gameRepository.updateGameStatus(game.getId(), Game.GameStatus.FINISHED);
+        }
+
+        return gameInfo;
     }
 
 }

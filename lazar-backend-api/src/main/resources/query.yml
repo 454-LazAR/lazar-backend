@@ -5,7 +5,7 @@ games:
       SELECT * FROM games WHERE id = :id
   insert: >
     INSERT INTO games (id, gameStatus) VALUES (:id, "IN_LOBBY")
-  update:
+  update: >
     UPDATE games SET gameStatus = :gameStatus WHERE id = :id
   delete:
 
@@ -17,15 +17,29 @@ players:
       SELECT * FROM players WHERE id = :id
     health: >
       SELECT health FROM players WHERE id = :id
+    by.gameId: >
+      SELECT p.health, p.id, MAX(g.timeReceived) AS lastUpdateTime
+      FROM players p
+      JOIN geoData g ON p.id = g.playerId
+      WHERE p.gameId = :gameId
+      GROUP BY p.id;
+    recent: >
+      SELECT p.id, p.health, MAX(g.timeReceived) AS mostRecentTime
+      FROM players p
+      JOIN geoData g ON p.id = g.playerId
+      WHERE p.gameId = :gameId AND p.health != 0
+      GROUP BY p.id;
   insert: >
     INSERT INTO players (id, gameId, username, health, isAdmin) VALUES (:id, :gameId, :username, :health, :isAdmin)
   update:
-    health:
+    health: >
       UPDATE players SET health = GREATEST(health - :decrementBy, 0) WHERE id = :id;
+    inactive: >
+      UPDATE players SET health = 0 WHERE id = :id
   delete:
 
 geoData:
-  add.ping:
+  add.ping: >
     INSERT INTO geoData (playerId, gameId, longitude, latitude, timeReceived) VALUES (:playerId, :gameId, :longitude, :latitude, :timeReceived)
   get:
     in.range: >
