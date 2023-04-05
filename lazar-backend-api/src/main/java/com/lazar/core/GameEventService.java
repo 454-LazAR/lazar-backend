@@ -123,7 +123,7 @@ public class GameEventService {
         playerLocations.sort(Comparator.comparing(GeoData::getHeading));
 
         GeoData hitPlayer = playerLocations.isEmpty() ? null : playerLocations.get(0);
-        GameInfo gameInfo = getGameInfo(game.get(), hitPlayer == null ? null : hitPlayer.getPlayerId());
+        GameInfo gameInfo = checkGameOver(game.get(), hitPlayer == null ? null : hitPlayer.getPlayerId());
         if (gameInfo.getStatus() == Game.GameStatus.FINISHED || hitPlayer.getHeading() > HEADING_THRESHOLD) {
             return false;
         }
@@ -140,11 +140,21 @@ public class GameEventService {
         return true;
     }
 
-    // This would be much simpler with websockets I think
-    // Fetches all players from a game, returns the health of the focus player (player who's health is about to be changed)
-    // Detects inactive players, sets their health to 0
-    // Debug mode = true -> does not check for inactive users
-    private GameInfo getGameInfo(Game game, UUID focusPlayerId) {
+    /**
+     *
+     * Checks for the game over status, while returning an object containing information
+     * relevant to the specified game object. To receive meaningful data, the focus player
+     * UUID MUST belong to the corresponding game object. If you don't care about the focus
+     * player, set the focusPlayerId parameter to null and ignore the corresponding field in
+     * the return object.
+     *
+     * @param game Game object.
+     * @param focusPlayerId Can be any alive player. Usually should be the player whose health
+     *                      is about to be decremented.
+     * @return Information regarding game state. Includes status, number of alive players remaining
+     * and the health of the focus player.
+     */
+    private GameInfo checkGameOver(Game game, UUID focusPlayerId) {
         List<Player> players = playerRepository.getPlayerLatestData(game.getId());
 
         List<UUID> inactivePlayers = new ArrayList<>();
