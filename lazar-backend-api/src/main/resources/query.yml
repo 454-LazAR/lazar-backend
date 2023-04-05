@@ -27,7 +27,7 @@ players:
       SELECT p.id, p.health, MAX(g.timeReceived) AS mostRecentTime
       FROM players p
       JOIN geoData g ON p.id = g.playerId
-      WHERE p.gameId = :gameId
+      WHERE p.gameId = :gameId AND p.health != 0
       GROUP BY p.id;
   insert: >
     INSERT INTO players (id, gameId, username, health, isAdmin) VALUES (:id, :gameId, :username, :health, :isAdmin)

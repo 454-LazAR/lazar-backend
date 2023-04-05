@@ -1,9 +1,6 @@
 package com.lazar.core;
 
-import com.lazar.model.Game;
-import com.lazar.model.GeoData;
-import com.lazar.model.Ping;
-import com.lazar.model.Player;
+import com.lazar.model.*;
 import com.lazar.persistence.GameRepository;
 import com.lazar.persistence.GeoDataRepository;
 import com.lazar.persistence.PlayerRepository;
@@ -126,8 +123,8 @@ public class GameEventService {
         playerLocations.sort(Comparator.comparing(GeoData::getHeading));
 
         GeoData hitPlayer = playerLocations.isEmpty() ? null : playerLocations.get(0);
-        int hitPlayersHealth = getPlayersHealthAndCheckGameOver(game.get(), hitPlayer == null ? null : hitPlayer.getPlayerId());
-        if (hitPlayer == null || hitPlayersHealth == 0 || hitPlayer.getHeading() > HEADING_THRESHOLD) {
+        GameInfo gameInfo = getGameInfo(game.get(), hitPlayer == null ? null : hitPlayer.getPlayerId());
+        if (gameInfo.getStatus() == Game.GameStatus.FINISHED || hitPlayer.getHeading() > HEADING_THRESHOLD) {
             return false;
         }
 
@@ -136,7 +133,7 @@ public class GameEventService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating player in database.");
         }
 
-        if(hitPlayersHealth - decrementBy <= 0) {
+        if(gameInfo.getNumAlivePlayers() == 2 && gameInfo.getFocusPlayerHealth() - decrementBy <= 0) {
             gameRepository.updateGameStatus(game.get().getId(), Game.GameStatus.FINISHED);
         }
 
@@ -144,30 +141,39 @@ public class GameEventService {
     }
 
     // This would be much simpler with websockets I think
-    // Fetches all players from a game, returns the health of the player with id = playerId
+    // Fetches all players from a game, returns the health of the focus player (player who's health is about to be changed)
     // Detects inactive players, sets their health to 0
-    private int getPlayersHealthAndCheckGameOver(Game game, UUID playerId) {
+    // Debug mode = true -> does not check for inactive users
+    private GameInfo getGameInfo(Game game, UUID focusPlayerId) {
         List<Player> players = playerRepository.getPlayerLatestData(game.getId());
+
         List<UUID> inactivePlayers = new ArrayList<>();
-        int playerHealth = 0;
         int numAlivePlayers = 0;
+        GameInfo gameInfo = new GameInfo();
+        gameInfo.setGame(game);
+
         for(Player player : players) {
             if(!DEBUG_MODE && Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT){
                 inactivePlayers.add(player.getId());
-            } else if (player.getHealth() != 0) {
+            } else {
                 numAlivePlayers++;
-                if(player.getId().equals(playerId)) {
-                    playerHealth = player.getHealth();
+                if(player.getId().equals(focusPlayerId)) {
+                    gameInfo.setFocusPlayerHealth(player.getHealth());
                 }
             }
         }
+        gameInfo.setNumAlivePlayers(numAlivePlayers);
+
         if(!inactivePlayers.isEmpty()){
             playerRepository.killInactivePlayers(inactivePlayers);
         }
+
         if(numAlivePlayers <= 1) {
+            gameInfo.setStatus(Game.GameStatus.FINISHED);
             gameRepository.updateGameStatus(game.getId(), Game.GameStatus.FINISHED);
         }
-        return playerHealth;
+
+        return gameInfo;
     }
 
 }
