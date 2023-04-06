@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 @Data
 @AllArgsConstructor
@@ -17,9 +19,11 @@ public class Game implements Serializable {
     }
     private String id;
     private GameStatus gameStatus;
+    private Instant latestGameStatusUpdate;
 
-    public Game(String id, String gameStatus) {
+    public Game(String id, String gameStatus, String latestGameStatusUpdate) {
         this.id = id;
         this.gameStatus = GameStatus.valueOf(gameStatus);
+        this.latestGameStatusUpdate = Timestamp.valueOf(latestGameStatusUpdate).toInstant();
     }
 }

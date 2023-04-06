@@ -27,12 +27,6 @@ public class Player implements Serializable {
         this.gameId = gameId;
     }
 
-    public Player(String id, String health, String lastUpdateTime) {
-        this.id = UUID.fromString(id);
-        this.health = Integer.parseInt(health);
-        this.lastUpdateTime = Timestamp.valueOf(lastUpdateTime).toInstant();
-    }
-
     public Player(String id, String gameId, String username, String health, String isAdmin) {
         this.id = UUID.fromString(id);
         this.gameId = gameId;

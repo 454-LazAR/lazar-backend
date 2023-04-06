@@ -20,7 +20,7 @@ public class GameRepository {
     public Optional<Game> getGame(String gameId) {
         return jdbi.withHandle(h -> h.createQuery(queries.getProperty("games.get.by.gameId"))
                 .bind("id", gameId)
-                .map((r, c) -> new Game(r.getString(1), r.getString(2)))
+                .map((r, c) -> new Game(r.getString(1), r.getString(2), r.getString(3)))
                 .findOne());
     }
 

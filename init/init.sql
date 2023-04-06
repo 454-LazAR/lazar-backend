@@ -5,7 +5,8 @@ USE lazardb;
 
 CREATE TABLE games (
 	id VARCHAR(6) PRIMARY KEY,
-	gameStatus ENUM('IN_PROGRESS', 'IN_LOBBY', 'FINISHED')
+	gameStatus ENUM('IN_PROGRESS', 'IN_LOBBY', 'FINISHED'),
+	latestGameStatusUpdate TIMESTAMP
 );
 
 CREATE TABLE players (

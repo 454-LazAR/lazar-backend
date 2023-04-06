@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.lazar.LazarApplication.DEBUG_MODE;
 
@@ -21,8 +22,7 @@ public class GameEventService {
     public static final Double HEADING_THRESHOLD = 10.0;
     public static final Long PING_INTERVAL = 1000L; // ms
     public static final Integer DAMAGE_PER_HIT = 20;
-    public static final Long TIME_THRESHOLD = PING_INTERVAL*3; // ms
-    public static final Long TIMEOUT = PING_INTERVAL*15; // ms
+    public static final Long TIMEOUT = PING_INTERVAL*10; // ms
 
     @Autowired
     private PlayerRepository playerRepository;
@@ -69,11 +69,31 @@ public class GameEventService {
     }
 
     public Ping gamePing(GeoData geoData) {
+        // ensure valid longitude, latitude, timestamp
+        if (geoData.getLongitude() == null || geoData.getLatitude() == null || geoData.getTimestamp() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Must specify longitude, latitude, and timestamp.");
+        }
+
         Player player = checkValidPlayerId(geoData);
         Game game = getGameFromPlayerId(player);
-
         if(game.getGameStatus() == Game.GameStatus.IN_LOBBY) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has not started.");
+        }
+
+        // DEBUG_MODE = false -> we are checking for inactivity
+        // Second Clause -> Checks if the user is inactive relative to their last ping.
+        // Third Clause -> Checks if the user is inactive relative to the start of the game.
+        if(!DEBUG_MODE
+                && Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT
+                && Duration.between(game.getLatestGameStatusUpdate(), Instant.now()).toMillis() >= TIMEOUT) {
+            playerRepository.killPlayer(player.getId());
+            return new Ping(Game.GameStatus.FINISHED, 0, null);
+        }
+
+        // update database with player location and timestamp via populating and passing the geoData object
+        geoData.setGameId(game.getId());
+        if (!geoDataRepository.insertPing(geoData)) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred inserting the ping into the DB.");
         }
 
         // get health
@@ -81,16 +101,6 @@ public class GameEventService {
         // couldn't find health in database, something went wrong
         if (health.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Player health not found in database.");
-        }
-
-        // ensure valid longitude, latitude, timestamp
-        if (geoData.getLongitude() == null || geoData.getLatitude() == null || geoData.getTimestamp() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Must specify longitude, latitude, and timestamp.");
-        }
-        // update database with player location and timestamp via populating and passing the geoData object
-        geoData.setGameId(game.getId());
-        if (!geoDataRepository.insertPing(geoData)) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred inserting the ping into the DB.");
         }
 
         return new Ping(game.getGameStatus(), health.get(), null);
@@ -110,6 +120,14 @@ public class GameEventService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game is still in the lobby or has finished.");
         }
 
+        // Same check as above.
+        if(!DEBUG_MODE
+                && Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT
+                && Duration.between(game.get().getLatestGameStatusUpdate(), Instant.now()).toMillis() >= TIMEOUT) {
+            playerRepository.killPlayer(player.getId());
+            return false;
+        }
+
         // Get a list of all players geo data
         List<GeoData> playerLocations = geoDataRepository.getGeoDataForHitCheck(geoData);
         for(GeoData playerLocation : playerLocations) {
@@ -122,68 +140,24 @@ public class GameEventService {
         }
         playerLocations.sort(Comparator.comparing(GeoData::getHeading));
 
-        GeoData hitPlayer = playerLocations.isEmpty() ? null : playerLocations.get(0);
-        GameInfo gameInfo = checkGameOver(game.get(), hitPlayer == null ? null : hitPlayer.getPlayerId());
-        if (gameInfo.getStatus() == Game.GameStatus.FINISHED || hitPlayer.getHeading() > HEADING_THRESHOLD) {
+        if (playerLocations.isEmpty() || playerLocations.get(0).getHeading() > HEADING_THRESHOLD) {
             return false;
         }
 
         int decrementBy = DAMAGE_PER_HIT;
-        if(!playerRepository.updateHealth(hitPlayer.getPlayerId(), decrementBy)){
+        if(!playerRepository.updateHealth(playerLocations.get(0).getPlayerId(), decrementBy)){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating player in database.");
         }
 
-        if(gameInfo.getNumAlivePlayers() == 2 && gameInfo.getFocusPlayerHealth() - decrementBy <= 0) {
-            gameRepository.updateGameStatus(game.get().getId(), Game.GameStatus.FINISHED);
-        }
+        checkGameOver(game.get());
 
         return true;
     }
 
-    /**
-     *
-     * Checks for the game over status, while returning an object containing information
-     * relevant to the specified game object. To receive meaningful data, the focus player
-     * UUID MUST belong to the corresponding game object. If you don't care about the focus
-     * player, set the focusPlayerId parameter to null and ignore the corresponding field in
-     * the return object.
-     *
-     * @param game Game object.
-     * @param focusPlayerId Can be any alive player. Usually should be the player whose health
-     *                      is about to be decremented.
-     * @return Information regarding game state. Includes status, number of alive players remaining
-     * and the health of the focus player.
-     */
-    private GameInfo checkGameOver(Game game, UUID focusPlayerId) {
-        List<Player> players = playerRepository.getPlayerLatestData(game.getId());
+    private void checkGameOver(Game game) {
 
-        List<UUID> inactivePlayers = new ArrayList<>();
-        int numAlivePlayers = 0;
-        GameInfo gameInfo = new GameInfo();
-        gameInfo.setGame(game);
+        
 
-        for(Player player : players) {
-            if(!DEBUG_MODE && Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT){
-                inactivePlayers.add(player.getId());
-            } else {
-                numAlivePlayers++;
-                if(player.getId().equals(focusPlayerId)) {
-                    gameInfo.setFocusPlayerHealth(player.getHealth());
-                }
-            }
-        }
-        gameInfo.setNumAlivePlayers(numAlivePlayers);
-
-        if(!inactivePlayers.isEmpty()){
-            playerRepository.killInactivePlayers(inactivePlayers);
-        }
-
-        if(numAlivePlayers <= 1) {
-            gameInfo.setStatus(Game.GameStatus.FINISHED);
-            gameRepository.updateGameStatus(game.getId(), Game.GameStatus.FINISHED);
-        }
-
-        return gameInfo;
     }
 
 }
