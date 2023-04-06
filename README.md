@@ -15,10 +15,10 @@ All game-functionality requests must have a valid player UUID.
 | `GET`  | `/hello-world` | Test your connection to the API    | 200 |
 | `POST` | `/create`| Create a new game | 200, 400, 500 |
 | `POST` | `/join` | Join a game with a game id and a username | 200, 400, 404, 409, 500 |
-| `GET` | `/lobby-ping` | Get a list of players and see if the game has started | 200, 400, 404 |
+| `POST` | `/lobby-ping` | Get a list of players and see if the game has started | 200, 400, 404 |
 | `POST` | `/game-ping` | Update the server with a player's location and receive game status | 200, 400, 404, 500 |
 | `POST` | `/start` | Start the game | 200, 400, 401, 403, 404, 409, 500 |
-| `GET` | `/check-hit` | Shoot another player | 200, 400, 404, 500 |
+| `POST` | `/check-hit` | Shoot another player | 200, 400, 404, 500 |
 
 ## In-Depth Explanations
 
@@ -76,7 +76,7 @@ A `500` will be sent if the server cannot add the user to the database.
 ```
 
 ### Join a game
-`GET` `http://143.244.200.36:8080/join`
+`POST` `http://143.244.200.36:8080/join`
 
 **Example Request Body**
 
@@ -129,7 +129,7 @@ A `409` will be sent if the specified gameId is already in progress or has concl
 ```
 
 ### Ping the lobby
-`GET` `http://143.244.200.36:8080/lobby-ping`
+`POST` `http://143.244.200.36:8080/lobby-ping`
 
 
 **Example Request Body**
@@ -313,7 +313,7 @@ A `500` will be sent if the server encounters any other errors, especially relat
 ```
 
 ### Check hit
-`GET` `http://143.244.200.36:8080/check-hit`
+`POST` `http://143.244.200.36:8080/check-hit`
 
 **Example Request Body**
 
