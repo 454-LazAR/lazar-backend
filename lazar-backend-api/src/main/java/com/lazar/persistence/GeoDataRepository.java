@@ -2,15 +2,14 @@ package com.lazar.persistence;
 
 import com.lazar.core.GameEventService;
 import com.lazar.model.GeoData;
-import com.lazar.model.Player;
 import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 @Repository
@@ -37,7 +36,7 @@ public class GeoDataRepository {
 
     // TODO Drew, please check this query out and make sure it looks right.
     //  I'm assuming we want to just enter a new row for each ping instead of updating one row for each player?
-    public boolean insertPing(GeoData data) {
+    public boolean insertPing(GeoData data) throws UnableToExecuteStatementException {
         Integer status = jdbi.withHandle(h -> h.createUpdate(queries.getProperty("geoData.add.ping"))
             .bind("playerId", data.getPlayerId())
             .bind("gameId", data.getGameId())

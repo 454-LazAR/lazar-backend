@@ -27,5 +27,5 @@ CREATE TABLE geoData (
 	timeReceived TIMESTAMP,
 	FOREIGN KEY (playerId) REFERENCES players(id) ON DELETE CASCADE,
 	FOREIGN KEY (gameId) REFERENCES games(id) ON DELETE CASCADE,
-	UNIQUE (latitude, longitude, timeReceived)
+	UNIQUE (playerId, latitude, longitude, timeReceived)
 );

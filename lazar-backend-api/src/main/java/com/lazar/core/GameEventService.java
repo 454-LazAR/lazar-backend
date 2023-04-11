@@ -4,11 +4,13 @@ import com.lazar.model.*;
 import com.lazar.persistence.GameRepository;
 import com.lazar.persistence.GeoDataRepository;
 import com.lazar.persistence.PlayerRepository;
+import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -46,9 +48,6 @@ public class GameEventService {
         Optional<Player> player = playerRepository.getRecentPlayerById(geoData.getPlayerId());
         if (player.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Player not found for ID: " + geoData.getPlayerId());
-        }
-        if (player.get().getIsInactive()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Player with ID " + geoData.getPlayerId() + " is inactive.");
         }
         return player.get();
     }
@@ -99,6 +98,10 @@ public class GameEventService {
 
         Player player = checkRecentValidPlayer(geoData);
 
+        if (player.getIsInactive()) {
+            return new Ping(null, true, null, null);
+        }
+
         Game game = getGameFromPlayerId(player);
         if(game.getGameStatus() == Game.GameStatus.IN_LOBBY) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has not started.");
@@ -111,12 +114,19 @@ public class GameEventService {
                 && (player.getLastUpdateTime() == null || Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT)
                 && Duration.between(game.getLatestGameStatusUpdate(), Instant.now()).toMillis() >= TIMEOUT) {
             playerRepository.updateInactive(player.getId());
-            return new Ping(game.getGameStatus(), true, player.getHealth(), null);
+            return new Ping(null, true, null, null);
         }
 
         // update database with player location and timestamp via populating and passing the geoData object
         geoData.setGameId(game.getId());
-        if (!geoDataRepository.insertPing(geoData)) {
+        try {
+            if(!geoDataRepository.insertPing(geoData)){
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred inserting the ping into the DB.");
+            }
+        } catch (UnableToExecuteStatementException e) {
+            // Duplicate entry for (playerId, timestamp, latitude, longitude)
+            // This situation is completely impossible outside of postman testing.
+        } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred inserting the ping into the DB.");
         }
 
@@ -134,6 +144,10 @@ public class GameEventService {
 
         Player player = checkRecentValidPlayer(geoData);
         geoData.setGameId(player.getGameId());
+
+        if (player.getIsInactive()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Player with ID " + geoData.getPlayerId() + " is inactive.");
+        }
 
         if(player.getHealth() == 0) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Player is already dead.");
@@ -164,7 +178,12 @@ public class GameEventService {
         }
         playerLocations.sort(Comparator.comparing(GeoData::getHeading));
 
-        if (playerLocations.isEmpty() || playerLocations.get(0).getHeading() > HEADING_THRESHOLD) {
+        if(playerLocations.isEmpty()) {
+            gameRepository.updateGameStatus(geoData.getGameId(), Game.GameStatus.FINISHED);
+            return false;
+        }
+
+        if (playerLocations.get(0).getHeading() > HEADING_THRESHOLD) {
             return false;
         }
 
@@ -173,9 +192,7 @@ public class GameEventService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating player in database.");
         }
 
-        if(playerLocations.isEmpty()) {
-            gameRepository.updateGameStatus(geoData.getGameId(), Game.GameStatus.FINISHED);
-        } else if(playerLocations.size() == 1) {
+        if(playerLocations.size() == 1) {
             checkGameOver(playerLocations.get(0).getPlayerId(), geoData.getGameId());
         }
 
