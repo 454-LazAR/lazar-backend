@@ -109,7 +109,7 @@ public class GameAdminService {
         }
         // check that we're in lobby still
         if (game.getGameStatus() != Game.GameStatus.IN_LOBBY) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot start a game if not in lobby.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Game has already started or has been abandoned.");
         }
 
         if (!gameRepository.updateGameStatus(player.getGameId(), Game.GameStatus.IN_PROGRESS)) {
