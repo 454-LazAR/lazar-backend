@@ -38,17 +38,17 @@ public class GameEventService {
         if (player.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Player not found for ID: " + geoData.getPlayerId());
         }
-        if (player.get().getIsInactive()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Player with ID " + geoData.getPlayerId() + " is inactive.");
-        }
         return player.get();
     }
 
     // Checks for valid playerId while also returning the player's most recent geoData timestamp
     private Player checkRecentValidPlayer(GeoData geoData) {
-        Optional<Player> player = playerRepository.getPlayerById(geoData.getPlayerId());
+        Optional<Player> player = playerRepository.getRecentPlayerById(geoData.getPlayerId());
         if (player.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Player not found for ID: " + geoData.getPlayerId());
+        }
+        if (player.get().getIsInactive()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Player with ID " + geoData.getPlayerId() + " is inactive.");
         }
         return player.get();
     }
