@@ -77,7 +77,7 @@ public class GameAdminService {
         if(game.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game does not exist.");
         } else if(game.get().getGameStatus() != Game.GameStatus.IN_LOBBY) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Game is already in progress or has completed.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Game is not joinable.");
         }
         return addPlayerToGame(playerDetails);
     }
@@ -109,7 +109,7 @@ public class GameAdminService {
         }
         // check that we're in lobby still
         if (game.getGameStatus() != Game.GameStatus.IN_LOBBY) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot start a game if not in lobby.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Game has already started or has been abandoned.");
         }
 
         if (!gameRepository.updateGameStatus(player.getGameId(), Game.GameStatus.IN_PROGRESS)) {

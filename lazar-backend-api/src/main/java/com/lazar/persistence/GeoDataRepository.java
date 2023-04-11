@@ -3,8 +3,11 @@ package com.lazar.persistence;
 import com.lazar.core.GameEventService;
 import com.lazar.model.GeoData;
 import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -22,8 +25,12 @@ public class GeoDataRepository {
 
     public List<GeoData> getGeoDataForHitCheck(GeoData shooterData) {
         Instant timestamp = shooterData.getTimestamp();
-        Timestamp min = Timestamp.from(timestamp.minusMillis(GameEventService.TIME_THRESHOLD));
+        Timestamp min = Timestamp.from(Instant.now().minusMillis(GameEventService.TIMEOUT));
         Timestamp max = Timestamp.from(timestamp);
+        if(min.compareTo(max) > 0) {
+            // This should never happen, but if it did then the game could end prematurely
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fatal timestamp error.");
+        }
         return jdbi.withHandle(h -> h.createQuery(queries.getProperty("geoData.get.in.range"))
                 .bind("gameId", shooterData.getGameId())
                 .bind("playerId", shooterData.getPlayerId())
@@ -35,7 +42,7 @@ public class GeoDataRepository {
 
     // TODO Drew, please check this query out and make sure it looks right.
     //  I'm assuming we want to just enter a new row for each ping instead of updating one row for each player?
-    public boolean insertPing(GeoData data) {
+    public boolean insertPing(GeoData data) throws UnableToExecuteStatementException {
         Integer status = jdbi.withHandle(h -> h.createUpdate(queries.getProperty("geoData.add.ping"))
             .bind("playerId", data.getPlayerId())
             .bind("gameId", data.getGameId())

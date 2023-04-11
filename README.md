@@ -117,13 +117,13 @@ A `404` will be sent if the specified gameId is not valid (there is no game that
 }
 ```
 
-A `409` will be sent if the specified gameId is already in progress or has concluded.
+A `409` will be sent if the specified gameId is already in progress, has concluded, or was abandoned.
 ```json
 {
   "timestamp": "2023-03-28T06:11:46.455+00:00",
   "status": 409,
   "error": "Conflict",
-  "message": "Game is already in progress or has completed.",
+  "message": "Game is not joinable.",
   "path": "/join"
 }
 ```
@@ -140,7 +140,7 @@ A `409` will be sent if the specified gameId is already in progress or has concl
 }
 ```
 
-A `200` will be sent with the game's status and a list of players in the lobby. If the game has started, a `game-ping` will be returned instead.
+A `200` will be sent with the game's status and a list of players in the lobby. If the game has started, a `game-ping` will be returned instead. If the API has not received a ping from the admin in at least 30 seconds (15*ping_interval), the gameStatus will be marked as `ABANDONED`, and users still connected to the lobby should disconnect.
 ```json
 {
     "gameStatus": "IN_LOBBY",
@@ -148,6 +148,12 @@ A `200` will be sent with the game's status and a list of players in the lobby. 
         "drew",
         "harrison"
     ]
+}
+```
+
+```json
+{
+    "gameStatus": "ABANDONED"
 }
 ```
 
@@ -187,11 +193,18 @@ A `404` will be sent if the Game object associated with the `playerId` can't be 
 }
 ```
 
-A `200` will be sent with the game's status and the player's health.
+A `200` will be sent with the game's status and the player's health. If a player has not pinged the server in 30 seconds (15*ping_interval), they will be marked as inactive. If a user is marked inactive, they are essentially dead. The front end should indicate to the user that they were kicked for inactivity and should return to the main menu.
+
 ```json
 {
     "gameStatus": "IN_PROGRESS",
     "health": 100
+}
+```
+
+```json
+{
+    "isInactive": true
 }
 ```
 
@@ -296,7 +309,7 @@ A `409` will be sent if the game associated with `playerId` does not have a stat
   "timestamp": "2023-03-28T06:11:46.455+00:00",
   "status": 409,
   "error": "Conflict",
-  "message": "Cannot start a game if not in lobby.",
+  "message": "Game has already started or has been abandoned.",
   "path": "/start"
 }
 ```
@@ -339,6 +352,17 @@ A `400` will be sent if `playerId` is invalid/doesn't exist.
   "status": 400,
   "error": "Bad Request",
   "message": "Game has not started.",
+  "path": "/check-hit"
+}
+```
+
+A `400` will be sent if `playerId` is inactive.
+```json
+{
+  "timestamp": "2023-03-28T06:08:56.777+00:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Player with ID 899769f6-87b7-4915-abfa-3b13530e3432 is inactive",
   "path": "/check-hit"
 }
 ```

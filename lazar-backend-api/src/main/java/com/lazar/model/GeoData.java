@@ -53,6 +53,7 @@ public class GeoData implements Serializable {
     private Double longitude;
     private Instant timestamp;
     private Double heading;
+    private Integer health;
 
     // For converting from database response to backend object
     public GeoData(String playerId, String gameId, String longitude, String latitude, String timestamp) {

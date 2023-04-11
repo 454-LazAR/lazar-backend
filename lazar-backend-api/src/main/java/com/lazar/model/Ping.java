@@ -11,6 +11,7 @@ import java.util.List;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class Ping {
     private Game.GameStatus gameStatus;
+    private Boolean isInactive;
     private Integer health;
     private List<String> usernames;
 }

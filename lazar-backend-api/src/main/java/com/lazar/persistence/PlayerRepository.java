@@ -1,10 +1,7 @@
 package com.lazar.persistence;
 
-import com.lazar.model.Game;
 import com.lazar.model.Player;
-import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
-import org.jdbi.v3.core.statement.PreparedBatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -39,6 +36,13 @@ public class PlayerRepository {
     public Optional<Player> getPlayerById(UUID playerId) {
         return jdbi.withHandle(h -> h.createQuery(queries.getProperty("players.get.by.playerId"))
                 .bind("id", playerId)
+                .map((r, c) -> new Player(r.getString(1), r.getString(2), r.getString(3), r.getString(4), r.getString(5), r.getString(6)))
+                .findOne());
+    }
+
+    public Optional<Player> getRecentPlayerById(UUID playerId) {
+        return jdbi.withHandle(h -> h.createQuery(queries.getProperty("players.get.recent.by.id"))
+                .bind("id", playerId)
                 .map((r, c) -> new Player(r.getString(1), r.getString(2), r.getString(3), r.getString(4), r.getString(5)))
                 .findOne());
     }
@@ -58,22 +62,11 @@ public class PlayerRepository {
         );
     }
 
-    public List<Player> getPlayerLatestData(String gameId) {
-        return jdbi.withHandle(h -> h.createQuery(queries.getProperty("players.get.recent"))
-                .bind("gameId", gameId)
-                .map((r,c) -> new Player(r.getString(1), r.getString(2), r.getString(3)))
-                .list());
+    public boolean updateInactive(UUID id) {
+        Integer status = jdbi.withHandle(h -> h.createUpdate(queries.getProperty("players.update.inactive"))
+                .bind("id", id)
+                .execute());
+        return status == 1;
     }
 
-    public boolean killInactivePlayers(List<UUID> players) {
-        int[] status;
-        try(Handle h = jdbi.open()) {
-            PreparedBatch batch = h.prepareBatch(queries.getProperty("players.update.inactive"));
-            for(UUID id : players) {
-                batch.bind("id", id.toString()).add();
-            }
-            status = batch.execute();
-        }
-        return status.length > 0;
-    }
 }

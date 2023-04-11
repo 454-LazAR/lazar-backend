@@ -4,9 +4,12 @@ games:
     by.gameId: >
       SELECT * FROM games WHERE id = :id
   insert: >
-    INSERT INTO games (id, gameStatus) VALUES (:id, "IN_LOBBY")
-  update: >
-    UPDATE games SET gameStatus = :gameStatus WHERE id = :id
+    INSERT INTO games (id, gameStatus, latestGameStatusUpdate) VALUES (:id, "IN_LOBBY", :time)
+  update:
+    status: >
+      UPDATE games SET gameStatus = :gameStatus, latestGameStatusUpdate = :time WHERE id = :id
+    time: >
+      UPDATE games SET latestGameStatusUpdate = :latestGameStatusUpdate WHERE id = :id
   delete:
 
 players:
@@ -17,25 +20,18 @@ players:
       SELECT * FROM players WHERE id = :id
     health: >
       SELECT health FROM players WHERE id = :id
-    by.gameId: >
-      SELECT p.health, p.id, MAX(g.timeReceived) AS lastUpdateTime
-      FROM players p
-      JOIN geoData g ON p.id = g.playerId
-      WHERE p.gameId = :gameId
-      GROUP BY p.id;
-    recent: >
-      SELECT p.id, p.health, MAX(g.timeReceived) AS mostRecentTime
-      FROM players p
-      JOIN geoData g ON p.id = g.playerId
-      WHERE p.gameId = :gameId AND p.health != 0
-      GROUP BY p.id;
+    recent.by.id: >
+      SELECT players.id, players.gameId, players.health, players.isInactive, MAX(geoData.timeReceived) AS most_recent_timeReceived
+      FROM players
+      INNER JOIN geoData ON players.id = geoData.playerId
+      WHERE players.id = :id;
   insert: >
     INSERT INTO players (id, gameId, username, health, isAdmin) VALUES (:id, :gameId, :username, :health, :isAdmin)
   update:
     health: >
       UPDATE players SET health = GREATEST(health - :decrementBy, 0) WHERE id = :id;
     inactive: >
-      UPDATE players SET health = 0 WHERE id = :id
+      UPDATE players SET isInactive = true WHERE id = :id
   delete:
 
 geoData:
