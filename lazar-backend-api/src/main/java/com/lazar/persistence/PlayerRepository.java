@@ -36,6 +36,13 @@ public class PlayerRepository {
     public Optional<Player> getPlayerById(UUID playerId) {
         return jdbi.withHandle(h -> h.createQuery(queries.getProperty("players.get.by.playerId"))
                 .bind("id", playerId)
+                .map((r, c) -> new Player(r.getString(1), r.getString(2), r.getString(3), r.getString(4), r.getString(5), r.getString(6)))
+                .findOne());
+    }
+
+    public Optional<Player> getRecentPlayerById(UUID playerId) {
+        return jdbi.withHandle(h -> h.createQuery(queries.getProperty("players.get.recent.by.id"))
+                .bind("id", playerId)
                 .map((r, c) -> new Player(r.getString(1), r.getString(2), r.getString(3), r.getString(4), r.getString(5)))
                 .findOne());
     }
@@ -55,7 +62,7 @@ public class PlayerRepository {
         );
     }
 
-    public boolean killPlayer(UUID id) {
+    public boolean updateInactive(UUID id) {
         Integer status = jdbi.withHandle(h -> h.createUpdate(queries.getProperty("players.update.inactive"))
                 .bind("id", id)
                 .execute());

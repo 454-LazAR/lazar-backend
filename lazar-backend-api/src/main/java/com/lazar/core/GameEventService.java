@@ -12,7 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.lazar.LazarApplication.DEBUG_MODE;
 
@@ -37,7 +36,19 @@ public class GameEventService {
     private Player checkValidPlayerId(GeoData geoData) {
         Optional<Player> player = playerRepository.getPlayerById(geoData.getPlayerId());
         if (player.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid player ID.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Player not found for ID: " + geoData.getPlayerId());
+        }
+        if (player.get().getIsInactive()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Player with ID " + geoData.getPlayerId() + " is inactive.");
+        }
+        return player.get();
+    }
+
+    // Checks for valid playerId while also returning the player's most recent geoData timestamp
+    private Player checkRecentValidPlayer(GeoData geoData) {
+        Optional<Player> player = playerRepository.getPlayerById(geoData.getPlayerId());
+        if (player.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Player not found for ID: " + geoData.getPlayerId());
         }
         return player.get();
     }
@@ -57,6 +68,18 @@ public class GameEventService {
         Game currGame = getGameFromPlayerId(player);
         geoData.setGameId(currGame.getId());
 
+        if(currGame.getGameStatus() == Game.GameStatus.ABANDONED) {
+            throw new ResponseStatusException(HttpStatus.GONE, "The game was abandoned by the host.");
+        } else if (!DEBUG_MODE && Duration.between(currGame.getLatestGameStatusUpdate(), Instant.now()).toMillis() >= TIMEOUT) {
+            gameRepository.updateGameStatus(currGame.getId(), Game.GameStatus.ABANDONED);
+            throw new ResponseStatusException(HttpStatus.GONE, "The game was abandoned by the host.");
+        }
+
+        if (player.getIsAdmin() && !gameRepository.updateLastActivity(currGame.getId(), Instant.now())) {
+            String errorMessage = "Failed to update the last activity of game " + currGame.getId();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, errorMessage);
+        }
+
         // check if we're in the lobby or if the game has started
         if (currGame.getGameStatus() == Game.GameStatus.IN_LOBBY) {
             List<String> currPlayers = playerRepository.getUsernamesByGame(geoData.getGameId());
@@ -74,7 +97,8 @@ public class GameEventService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Must specify longitude, latitude, and timestamp.");
         }
 
-        Player player = checkValidPlayerId(geoData);
+        Player player = checkRecentValidPlayer(geoData);
+
         Game game = getGameFromPlayerId(player);
         if(game.getGameStatus() == Game.GameStatus.IN_LOBBY) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has not started.");
@@ -86,7 +110,7 @@ public class GameEventService {
         if(!DEBUG_MODE
                 && Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT
                 && Duration.between(game.getLatestGameStatusUpdate(), Instant.now()).toMillis() >= TIMEOUT) {
-            playerRepository.killPlayer(player.getId());
+            playerRepository.updateInactive(player.getId());
             return new Ping(Game.GameStatus.FINISHED, 0, null);
         }
 
@@ -107,8 +131,8 @@ public class GameEventService {
     }
 
     public boolean checkHit(GeoData geoData) {
-        // Find game id, update geoData object
-        Player player = checkValidPlayerId(geoData);
+
+        Player player = checkRecentValidPlayer(geoData);
         geoData.setGameId(player.getGameId());
 
         if(player.getHealth() == 0) {
@@ -124,7 +148,7 @@ public class GameEventService {
         if(!DEBUG_MODE
                 && Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT
                 && Duration.between(game.get().getLatestGameStatusUpdate(), Instant.now()).toMillis() >= TIMEOUT) {
-            playerRepository.killPlayer(player.getId());
+            playerRepository.updateInactive(player.getId());
             return false;
         }
 
@@ -149,14 +173,21 @@ public class GameEventService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating player in database.");
         }
 
-        checkGameOver(game.get());
+        if(playerLocations.size() == 1) {
+            checkGameOver(playerLocations.get(0).getPlayerId(), geoData.getGameId());
+        }
 
         return true;
     }
 
-    private void checkGameOver(Game game) {
+    private void checkGameOver(UUID playerId, String gameId) {
 
-        
+        Optional<Integer> health = playerRepository.getPlayerHealth(playerId);
+        if(health.isEmpty() || health.get() != 0) {
+            return;
+        }
+
+        gameRepository.updateGameStatus(gameId, Game.GameStatus.FINISHED);
 
     }
 

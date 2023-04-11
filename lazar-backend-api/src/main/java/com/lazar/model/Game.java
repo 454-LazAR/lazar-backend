@@ -15,7 +15,7 @@ import java.time.Instant;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class Game implements Serializable {
     public enum GameStatus {
-        IN_PROGRESS, IN_LOBBY, FINISHED
+        IN_PROGRESS, IN_LOBBY, FINISHED, ABANDONED
     }
     private String id;
     private GameStatus gameStatus;

@@ -20,6 +20,7 @@ public class Player implements Serializable {
     private String username;
     private Integer health;
     private Boolean isAdmin;
+    private Boolean isInactive;
     private Instant lastUpdateTime;
 
     public Player(UUID id, String gameId) {
@@ -27,11 +28,20 @@ public class Player implements Serializable {
         this.gameId = gameId;
     }
 
-    public Player(String id, String gameId, String username, String health, String isAdmin) {
+    public Player(String playerId, String gameId, String health, String isInactive, String lastUpdateTime) {
+        this.id = UUID.fromString(playerId);
+        this.gameId = gameId;
+        this.health = Integer.parseInt(health);
+        this.isInactive = isInactive != null && Integer.parseInt(isInactive) == 1;
+        this.lastUpdateTime = Timestamp.valueOf(lastUpdateTime).toInstant();
+    }
+
+    public Player(String id, String gameId, String username, String health, String isAdmin, String isInactive) {
         this.id = UUID.fromString(id);
         this.gameId = gameId;
         this.username = username;
         this.health = Integer.parseInt(health);
         this.isAdmin = isAdmin != null && Integer.parseInt(isAdmin) == 1;
+        this.isInactive = isInactive != null && Integer.parseInt(isInactive) == 1;
     }
 }
