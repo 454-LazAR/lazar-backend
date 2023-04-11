@@ -77,7 +77,7 @@ public class GameAdminService {
         if(game.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game does not exist.");
         } else if(game.get().getGameStatus() != Game.GameStatus.IN_LOBBY) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Game is already in progress or has completed.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Game is not joinable.");
         }
         return addPlayerToGame(playerDetails);
     }

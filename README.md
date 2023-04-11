@@ -117,13 +117,13 @@ A `404` will be sent if the specified gameId is not valid (there is no game that
 }
 ```
 
-A `409` will be sent if the specified gameId is already in progress or has concluded.
+A `409` will be sent if the specified gameId is already in progress, has concluded, or was abandoned.
 ```json
 {
   "timestamp": "2023-03-28T06:11:46.455+00:00",
   "status": 409,
   "error": "Conflict",
-  "message": "Game is already in progress or has completed.",
+  "message": "Game is not joinable.",
   "path": "/join"
 }
 ```
@@ -352,6 +352,17 @@ A `400` will be sent if `playerId` is invalid/doesn't exist.
   "status": 400,
   "error": "Bad Request",
   "message": "Game has not started.",
+  "path": "/check-hit"
+}
+```
+
+A `400` will be sent if `playerId` is inactive.
+```json
+{
+  "timestamp": "2023-03-28T06:08:56.777+00:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Player with ID 899769f6-87b7-4915-abfa-3b13530e3432 is inactive",
   "path": "/check-hit"
 }
 ```
