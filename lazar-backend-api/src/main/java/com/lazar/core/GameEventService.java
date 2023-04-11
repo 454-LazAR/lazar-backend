@@ -108,7 +108,7 @@ public class GameEventService {
         // Second Clause -> Checks if the user is inactive relative to their last ping.
         // Third Clause -> Checks if the user is inactive relative to the start of the game.
         if(!DEBUG_MODE
-                && Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT
+                && (player.getLastUpdateTime() == null || Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT)
                 && Duration.between(game.getLatestGameStatusUpdate(), Instant.now()).toMillis() >= TIMEOUT) {
             playerRepository.updateInactive(player.getId());
             return new Ping(game.getGameStatus(), true, player.getHealth(), null);
@@ -173,7 +173,9 @@ public class GameEventService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating player in database.");
         }
 
-        if(playerLocations.size() == 1) {
+        if(playerLocations.isEmpty()) {
+            gameRepository.updateGameStatus(geoData.getGameId(), Game.GameStatus.FINISHED);
+        } else if(playerLocations.size() == 1) {
             checkGameOver(playerLocations.get(0).getPlayerId(), geoData.getGameId());
         }
 

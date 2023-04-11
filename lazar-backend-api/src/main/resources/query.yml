@@ -7,7 +7,7 @@ games:
     INSERT INTO games (id, gameStatus, latestGameStatusUpdate) VALUES (:id, "IN_LOBBY", :time)
   update:
     status: >
-      UPDATE games SET gameStatus = :gameStatus WHERE id = :id
+      UPDATE games SET gameStatus = :gameStatus, latestGameStatusUpdate = :time WHERE id = :id
     time: >
       UPDATE games SET latestGameStatusUpdate = :latestGameStatusUpdate WHERE id = :id
   delete:

@@ -38,6 +38,7 @@ public class GameRepository {
         Integer status = jdbi.withHandle(h -> h.createUpdate(queries.getProperty("games.update.status"))
             .bind("id", gameId)
             .bind("gameStatus", gameStatus.toString())
+            .bind("time", Instant.now())
             .execute());
         return status == 1;
     }

@@ -33,7 +33,7 @@ public class Player implements Serializable {
         this.gameId = gameId;
         this.health = Integer.parseInt(health);
         this.isInactive = isInactive != null && Integer.parseInt(isInactive) == 1;
-        this.lastUpdateTime = Timestamp.valueOf(lastUpdateTime).toInstant();
+        this.lastUpdateTime = lastUpdateTime == null ? null : Timestamp.valueOf(lastUpdateTime).toInstant();
     }
 
     public Player(String id, String gameId, String username, String health, String isAdmin, String isInactive) {
