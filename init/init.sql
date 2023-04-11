@@ -5,7 +5,7 @@ USE lazardb;
 
 CREATE TABLE games (
 	id VARCHAR(6) PRIMARY KEY,
-	gameStatus ENUM('IN_PROGRESS', 'IN_LOBBY', 'FINISHED'),
+	gameStatus ENUM('IN_PROGRESS', 'IN_LOBBY', 'FINISHED', 'ABANDONED'),
 	latestGameStatusUpdate TIMESTAMP
 );
 
@@ -15,6 +15,7 @@ CREATE TABLE players (
 	username VARCHAR(30),
 	health INT,
 	isAdmin BOOLEAN DEFAULT false,
+	isInactive BOOLEAN DEFAULT false,
 	FOREIGN KEY (gameId) REFERENCES games(id) ON DELETE CASCADE
 );
 
