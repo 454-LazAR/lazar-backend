@@ -4,7 +4,7 @@ games:
     by.gameId: >
       SELECT * FROM games WHERE id = :id
   insert: >
-    INSERT INTO games (id, gameStatus) VALUES (:id, "IN_LOBBY")
+    INSERT INTO games (id, gameStatus, latestGameStatusUpdate) VALUES (:id, "IN_LOBBY", :time)
   update:
     status: >
       UPDATE games SET gameStatus = :gameStatus WHERE id = :id

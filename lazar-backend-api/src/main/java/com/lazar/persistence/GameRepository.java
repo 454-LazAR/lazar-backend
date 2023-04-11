@@ -29,6 +29,7 @@ public class GameRepository {
     public boolean insertGame(String gameId) {
         Integer status = jdbi.withHandle(h -> h.createUpdate(queries.getProperty("games.insert"))
                 .bind("id", gameId)
+                .bind("time", Instant.now())
                 .execute());
         return status == 1;
     }
@@ -44,7 +45,7 @@ public class GameRepository {
     public boolean updateLastActivity(String gameId, Instant updatedTime) {
         Integer status = jdbi.withHandle(h -> h.createUpdate(queries.getProperty("games.update.time"))
                 .bind("id", gameId)
-                .bind("latestGameStatusUpdate", Timestamp.from(updatedTime))
+                .bind("latestGameStatusUpdate", Timestamp.from(updatedTime).toString())
                 .execute());
         return status == 1;
     }

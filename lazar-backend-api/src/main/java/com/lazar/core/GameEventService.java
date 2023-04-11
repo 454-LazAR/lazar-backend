@@ -19,9 +19,9 @@ import static com.lazar.LazarApplication.DEBUG_MODE;
 public class GameEventService {
 
     public static final Double HEADING_THRESHOLD = 10.0;
-    public static final Long PING_INTERVAL = 1000L; // ms
+    public static final Long PING_INTERVAL = 2000L; // ms
     public static final Integer DAMAGE_PER_HIT = 20;
-    public static final Long TIMEOUT = PING_INTERVAL*10; // ms
+    public static final Long TIMEOUT = PING_INTERVAL*15; // ms
 
     @Autowired
     private PlayerRepository playerRepository;
@@ -69,10 +69,10 @@ public class GameEventService {
         geoData.setGameId(currGame.getId());
 
         if(currGame.getGameStatus() == Game.GameStatus.ABANDONED) {
-            throw new ResponseStatusException(HttpStatus.GONE, "The game was abandoned by the host.");
+            return new Ping(Game.GameStatus.ABANDONED, null, null, null);
         } else if (!DEBUG_MODE && Duration.between(currGame.getLatestGameStatusUpdate(), Instant.now()).toMillis() >= TIMEOUT) {
             gameRepository.updateGameStatus(currGame.getId(), Game.GameStatus.ABANDONED);
-            throw new ResponseStatusException(HttpStatus.GONE, "The game was abandoned by the host.");
+            return new Ping(Game.GameStatus.ABANDONED, null, null, null);
         }
 
         if (player.getIsAdmin() && !gameRepository.updateLastActivity(currGame.getId(), Instant.now())) {
@@ -83,11 +83,11 @@ public class GameEventService {
         // check if we're in the lobby or if the game has started
         if (currGame.getGameStatus() == Game.GameStatus.IN_LOBBY) {
             List<String> currPlayers = playerRepository.getUsernamesByGame(geoData.getGameId());
-            return new Ping(Game.GameStatus.IN_LOBBY, null, currPlayers);
+            return new Ping(Game.GameStatus.IN_LOBBY, null, null, currPlayers);
         }
         // Game has started, return in-game ping so the user knows the game has started
         else {
-            return new Ping(currGame.getGameStatus(), player.getHealth(), null);
+            return new Ping(currGame.getGameStatus(), null, player.getHealth(), null);
         }
     }
 
@@ -111,7 +111,7 @@ public class GameEventService {
                 && Duration.between(player.getLastUpdateTime(), Instant.now()).toMillis() >= TIMEOUT
                 && Duration.between(game.getLatestGameStatusUpdate(), Instant.now()).toMillis() >= TIMEOUT) {
             playerRepository.updateInactive(player.getId());
-            return new Ping(Game.GameStatus.FINISHED, 0, null);
+            return new Ping(game.getGameStatus(), true, player.getHealth(), null);
         }
 
         // update database with player location and timestamp via populating and passing the geoData object
@@ -127,7 +127,7 @@ public class GameEventService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Player health not found in database.");
         }
 
-        return new Ping(game.getGameStatus(), health.get(), null);
+        return new Ping(game.getGameStatus(), null, health.get(), null);
     }
 
     public boolean checkHit(GeoData geoData) {
