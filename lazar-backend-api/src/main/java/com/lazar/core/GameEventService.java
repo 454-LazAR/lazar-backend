@@ -4,6 +4,7 @@ import com.lazar.model.*;
 import com.lazar.persistence.GameRepository;
 import com.lazar.persistence.GeoDataRepository;
 import com.lazar.persistence.PlayerRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,9 +19,10 @@ import java.util.*;
 import static com.lazar.LazarApplication.DEBUG_MODE;
 
 @Service
+@Slf4j
 public class GameEventService {
 
-    public static final Double HEADING_THRESHOLD = 10.0;
+    public static final Double HEADING_THRESHOLD = 22.5;
     public static final Long PING_INTERVAL = 2000L; // ms
     public static final Integer DAMAGE_PER_HIT = 20;
     public static final Long TIMEOUT = PING_INTERVAL*15; // ms
@@ -183,6 +185,7 @@ public class GameEventService {
             return false;
         }
 
+        log.info("BEST HEADING: " + playerLocations.get(0).getHeading());
         if (playerLocations.get(0).getHeading() > HEADING_THRESHOLD) {
             return false;
         }
