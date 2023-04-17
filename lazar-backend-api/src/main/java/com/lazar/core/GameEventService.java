@@ -26,8 +26,8 @@ public class GameEventService {
     public static final Integer DAMAGE_PER_HIT = 20;
     public static final Long TIMEOUT = PING_INTERVAL*15; // ms
 
-    private static final Double MAX_DISTANCE = 100.0; // meters
-    private static final Double MAX_HEADING_DIFF = 180.0; // degrees
+    private static final Double MAX_DISTANCE = 170.0; // meters
+    private static final Double MAX_HEADING_DIFF = 130.0; // degrees
     private static final Double MIN_HIT_SCORE = 0.6;
 
     @Autowired
