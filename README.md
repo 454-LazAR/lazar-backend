@@ -6,7 +6,7 @@ Docker config files and API code for the backend server of the LazAR augmented r
 
 ## At a Glance
 
-All routes are relative to `https://laz-ar.duckdns.org:8443/` (Prod) or `http://localhost:8443` (Dev)
+All routes are relative to `https://laz-ar.duckdns.org:8443/` (Prod) or `https://localhost:8443` (Dev)
 
 All game-functionality requests must have a valid player UUID.
 
