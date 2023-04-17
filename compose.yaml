@@ -11,6 +11,7 @@ services:
     volumes:
       - ./data:/var/lib/mysql
       - ./init:/docker-entrypoint-initdb.d/:ro
+      - ./keystore:/keystore
     ports:
       - "3306:3306"
 
@@ -31,7 +32,7 @@ services:
         "server.error.include-message" : "always",
         "server.ssl.enabled" : "true",
         "server.ssl.key-store-type" : "PKCS12",
-        "server.ssl.key-store" : "/home/dockeruser/lazar-backend/keystore.p12",
+        "server.ssl.key-store" : "/keystore/keystore.p12",
         "server.ssl.key-store-password" : "$CERT_PASS",
         "server.ssl.protocol" : "TLS",
         "server.ssl.enabled-protocols" : "TLSv1.3",
