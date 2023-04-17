@@ -22,10 +22,13 @@ import static com.lazar.LazarApplication.DEBUG_MODE;
 @Slf4j
 public class GameEventService {
 
-    public static final Double HEADING_THRESHOLD = 22.5;
     public static final Long PING_INTERVAL = 2000L; // ms
     public static final Integer DAMAGE_PER_HIT = 20;
     public static final Long TIMEOUT = PING_INTERVAL*15; // ms
+
+    private static final Double MAX_DISTANCE = 100.0; // meters
+    private static final Double MAX_HEADING_DIFF = 180.0; // degrees
+    private static final Double MIN_HIT_SCORE = 0.6;
 
     @Autowired
     private PlayerRepository playerRepository;
@@ -142,6 +145,11 @@ public class GameEventService {
         return new Ping(game.getGameStatus(), null, health.get(), null);
     }
 
+    private Double calcHitScore(Double distance, Double headingDifference) {
+        return Math.max(0, 1 - Math.pow((distance / MAX_DISTANCE), 2))
+                * Math.max(0, 1 - Math.pow((headingDifference / MAX_HEADING_DIFF), 2));
+    }
+
     public boolean checkHit(GeoData geoData) {
 
         Player player = checkRecentValidPlayer(geoData);
@@ -168,7 +176,7 @@ public class GameEventService {
             return false;
         }
 
-        // Get a list of all players geo data
+        // Get a list of all players geo data, calculate the hit score for each player
         List<GeoData> playerLocations = geoDataRepository.getGeoDataForHitCheck(geoData);
         for(GeoData playerLocation : playerLocations) {
             // Calculate relative heading from the shooter.
@@ -176,17 +184,17 @@ public class GameEventService {
             if (diff > 180) {
                 diff = 360 - diff;
             }
-            playerLocation.setHeading(diff);
+            playerLocation.setHitScore(calcHitScore(geoData.distanceTo(playerLocation), diff));
         }
-        playerLocations.sort(Comparator.comparing(GeoData::getHeading));
+        playerLocations.sort(Comparator.comparing(GeoData::getHitScore));
 
         if(playerLocations.isEmpty()) {
             gameRepository.updateGameStatus(geoData.getGameId(), Game.GameStatus.FINISHED);
             return false;
         }
 
-        log.info("BEST HEADING: " + playerLocations.get(0).getHeading());
-        if (playerLocations.get(0).getHeading() > HEADING_THRESHOLD) {
+        log.info("BEST HIT SCORE: " + playerLocations.get(0).getHitScore());
+        if (playerLocations.get(0).getHitScore() <= MIN_HIT_SCORE) {
             return false;
         }
 
