@@ -11,7 +11,7 @@ services:
     volumes:
       - ./data:/var/lib/mysql
       - ./init:/docker-entrypoint-initdb.d/:ro
-      - ./keystore:/keystore
+      - ./keystore/keystore.p12:/keystore/keystore.p12
     ports:
       - "3306:3306"
 
