@@ -30,11 +30,11 @@ services:
         "spring.datasource.driver-class-name" : "org.mariadb.jdbc.Driver",
         "server.error.include-message" : "always",
         "server.ssl.enabled" : "true",
-        "server.ssl.key-store-type" : "PKCS12"
-        "server.ssl.key-store" : "/etc/letsencrypt/laz-ar.duckdns.org/keystore.p12"
-        "server.ssl.key-store-password" : "$CERT_PASS"
-        "server.ssl.protocol" : "TLS"
-        "server.ssl.enabled-protocols" : "TLSv1.3"
+        "server.ssl.key-store-type" : "PKCS12",
+        "server.ssl.key-store" : "/etc/letsencrypt/laz-ar.duckdns.org/keystore.p12",
+        "server.ssl.key-store-password" : "$CERT_PASS",
+        "server.ssl.protocol" : "TLS",
+        "server.ssl.enabled-protocols" : "TLSv1.3",
         "server.port" : "8843"
         }'
     volumes:
