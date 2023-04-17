@@ -28,7 +28,7 @@ public class GameEventService {
 
     private static final Double MAX_DISTANCE = 170.0; // meters
     private static final Double MAX_HEADING_DIFF = 100.0; // degrees
-    private static final Double MIN_HIT_SCORE = 0.6;
+    private static final Double MIN_HIT_SCORE = 0.66;
 
     @Autowired
     private PlayerRepository playerRepository;
