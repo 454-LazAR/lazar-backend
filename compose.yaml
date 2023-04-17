@@ -35,7 +35,7 @@ services:
         "server.ssl.key-store-password" : "$CERT_PASS",
         "server.ssl.protocol" : "TLS",
         "server.ssl.enabled-protocols" : "TLSv1.3",
-        "server.port" : "8843"
+        "server.port" : "8443"
         }'
     volumes:
       - .m2:/root/.m2
