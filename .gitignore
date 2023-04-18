@@ -28,3 +28,6 @@ README.html
 # temporary docker related things
 data/
 .m2
+
+#TEMP
+keystore.p12

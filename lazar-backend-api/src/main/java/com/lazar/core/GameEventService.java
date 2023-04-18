@@ -186,7 +186,7 @@ public class GameEventService {
             }
             playerLocation.setHitScore(calcHitScore(geoData.distanceTo(playerLocation), diff));
         }
-        playerLocations.sort(Comparator.comparing(GeoData::getHitScore));
+        playerLocations.sort(Comparator.comparing(GeoData::getHitScore).reversed());
 
         if(playerLocations.isEmpty()) {
             gameRepository.updateGameStatus(geoData.getGameId(), Game.GameStatus.FINISHED);
