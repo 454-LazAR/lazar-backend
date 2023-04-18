@@ -39,7 +39,7 @@ geoData:
     INSERT INTO geoData (playerId, gameId, longitude, latitude, timeReceived) VALUES (:playerId, :gameId, :longitude, :latitude, :timeReceived)
   get:
     in.range: >
-      SELECT g.playerId, g.gameId, t.avgLong, t.avgLat, g.timeReceived
+      SELECT g.playerId, g.gameId, t.avgLong, t.avgLat, g.timeReceived, p.health
       FROM geoData g
       INNER JOIN (
         SELECT playerId, AVG(latitude) as avgLat, AVG(longitude) as avgLong, MAX(timeReceived) as maxTimestamp
@@ -53,4 +53,4 @@ geoData:
         GROUP BY playerId
       ) t ON g.playerId = t.playerId AND g.timeReceived = t.maxTimestamp
       INNER JOIN players p ON g.playerId = p.id
-      WHERE p.health != 0;
+      WHERE p.health != 0 && p.isInactive != true;

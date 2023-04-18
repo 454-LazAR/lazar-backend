@@ -203,22 +203,12 @@ public class GameEventService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating player in database.");
         }
 
-        if(playerLocations.size() == 1) {
-            checkGameOver(playerLocations.get(0).getPlayerId(), geoData.getGameId());
+        // Check game over
+        if(playerLocations.size() == 1 && playerLocations.get(0).getPlayerHealth() - decrementBy <= 0) {
+            gameRepository.updateGameStatus(geoData.getGameId(), Game.GameStatus.FINISHED);
         }
 
         return true;
-    }
-
-    private void checkGameOver(UUID playerId, String gameId) {
-
-        Optional<Integer> health = playerRepository.getPlayerHealth(playerId);
-        if(health.isEmpty() || health.get() != 0) {
-            return;
-        }
-
-        gameRepository.updateGameStatus(gameId, Game.GameStatus.FINISHED);
-
     }
 
 }
