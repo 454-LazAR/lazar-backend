@@ -49,7 +49,7 @@ geoData:
           FROM geoData
           WHERE gameId = :gameId AND playerId != :playerId
         ) subquery
-        WHERE rn <= 5
+        WHERE rn <= 5 AND timeReceived >= :minTime
         GROUP BY playerId
       ) t ON g.playerId = t.playerId AND g.timeReceived = t.maxTimestamp
       INNER JOIN players p ON g.playerId = p.id
