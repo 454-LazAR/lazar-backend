@@ -29,5 +29,5 @@ README.html
 data/
 .m2
 
-#TEMP
-keystore.p12
+# local cert
+*.p12

@@ -21,16 +21,24 @@ services:
     restart: on-failure
     env_file: ./.env
     ports:
-      - "8080:8080"
+      - "8443:8443"
     environment:
       SPRING_APPLICATION_JSON: '{
         "spring.datasource.url"  : "jdbc:mariadb://db:3306/lazardb",
         "spring.datasource.username" : "$DB_USER",
         "spring.datasource.password" : "$DB_PASS",
         "spring.datasource.driver-class-name" : "org.mariadb.jdbc.Driver",
-        "server.error.include-message" : "always"
+        "server.error.include-message" : "always",
+        "server.ssl.enabled" : "true",
+        "server.ssl.key-store-type" : "PKCS12",
+        "server.ssl.key-store" : "/keystore/keystore.p12",
+        "server.ssl.key-store-password" : "$CERT_PASS",
+        "server.ssl.protocol" : "TLS",
+        "server.ssl.enabled-protocols" : "TLSv1.3",
+        "server.port" : "8443"
         }'
     volumes:
       - .m2:/root/.m2
+      - ./keystore/keystore.p12:/keystore/keystore.p12
     stdin_open: true
     tty: true

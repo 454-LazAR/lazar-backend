@@ -6,7 +6,7 @@ Docker config files and API code for the backend server of the LazAR augmented r
 
 ## At a Glance
 
-All routes are relative to `http://143.244.200.36:8080` (Prod) or `http://localhost:8080` (Dev)
+All routes are relative to `https://laz-ar.duckdns.org:8443/` (Prod) or `https://localhost:8443` (Dev)
 
 All game-functionality requests must have a valid player UUID.
 
@@ -23,7 +23,7 @@ All game-functionality requests must have a valid player UUID.
 ## In-Depth Explanations
 
 ### Hello world
-`GET` `http://143.244.200.36:8080/hello-world`
+`GET` `https://laz-ar.duckdns.org:8443/hello-world`
 
 **Example Request Body**
 
@@ -35,7 +35,7 @@ Hello world!
 ```
 
 ### Create a game
-`POST` `http://143.244.200.36:8080/create`
+`POST` `https://laz-ar.duckdns.org:8443/create`
 
 **Example Request Body**
 
@@ -76,7 +76,7 @@ A `500` will be sent if the server cannot add the user to the database.
 ```
 
 ### Join a game
-`POST` `http://143.244.200.36:8080/join`
+`POST` `https://laz-ar.duckdns.org:8443/join`
 
 **Example Request Body**
 
@@ -129,7 +129,7 @@ A `409` will be sent if the specified gameId is already in progress, has conclud
 ```
 
 ### Ping the lobby
-`POST` `http://143.244.200.36:8080/lobby-ping`
+`POST` `https://laz-ar.duckdns.org:8443/lobby-ping`
 
 
 **Example Request Body**
@@ -180,7 +180,7 @@ A `404` will be sent if the Game object associated with the `playerId` can't be 
 ```
 
 ### Ping in-game
-`POST` `http://143.244.200.36:8080/game-ping`
+`POST` `https://laz-ar.duckdns.org:8443/game-ping`
 
 **Example Request Body**
 
@@ -243,7 +243,7 @@ A `500` will be sent if the server can't find a player's health, or if the serve
 
 
 ### Start a game
-`POST` `http://143.244.200.36:8080/start`
+`POST` `https://laz-ar.duckdns.org:8443/start`
 
 
 **Example Request Body**
@@ -326,7 +326,7 @@ A `500` will be sent if the server encounters any other errors, especially relat
 ```
 
 ### Check hit
-`POST` `http://143.244.200.36:8080/check-hit`
+`POST` `https://laz-ar.duckdns.org:8443/check-hit`
 
 **Example Request Body**
 
