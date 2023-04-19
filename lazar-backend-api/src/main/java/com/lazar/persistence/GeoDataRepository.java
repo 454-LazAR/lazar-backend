@@ -9,10 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Properties;
+
+import static com.lazar.core.GameEventService.TIMEOUT;
 
 @Repository
 public class GeoDataRepository {
@@ -24,19 +27,12 @@ public class GeoDataRepository {
     private Properties queries;
 
     public List<GeoData> getGeoDataForHitCheck(GeoData shooterData) {
-        Instant timestamp = shooterData.getTimestamp();
-        Timestamp min = Timestamp.from(Instant.now().minusMillis(GameEventService.TIMEOUT));
-        Timestamp max = Timestamp.from(timestamp);
-        if(min.compareTo(max) > 0) {
-            // This should never happen, but if it did then the game could end prematurely
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fatal timestamp error.");
-        }
+        Timestamp minTime = Timestamp.from(Instant.now().minusMillis(TIMEOUT));
         return jdbi.withHandle(h -> h.createQuery(queries.getProperty("geoData.get.in.range"))
                 .bind("gameId", shooterData.getGameId())
                 .bind("playerId", shooterData.getPlayerId())
-                .bind("min", min)
-                .bind("max", max)
-                .map((r,c) -> new GeoData(r.getString(1), r.getString(2), r.getString(3), r.getString(4), r.getString(5)))
+                .bind("minTime", minTime)
+                .map((r,c) -> new GeoData(r.getString(1), r.getString(2), r.getString(3), r.getString(4), r.getString(5), r.getString(6)))
                 .list());
     }
 
