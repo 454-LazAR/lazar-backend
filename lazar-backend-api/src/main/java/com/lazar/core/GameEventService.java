@@ -23,7 +23,7 @@ import static com.lazar.LazarApplication.DEBUG_MODE;
 public class GameEventService {
 
     public static final Long PING_INTERVAL = 1000L; // ms
-    public static final Integer DAMAGE_PER_HIT = 20;
+    public static final Integer DAMAGE_PER_HIT = 10;
     public static final Long TIMEOUT = PING_INTERVAL*15; // ms
 
     private static final Double MAX_DISTANCE = 170.0; // meters
