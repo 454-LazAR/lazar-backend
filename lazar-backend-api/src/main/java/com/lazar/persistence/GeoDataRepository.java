@@ -33,7 +33,7 @@ public class GeoDataRepository {
                 .bind("playerId", shooterData.getPlayerId())
                 .bind("min", min)
                 .bind("max", Timestamp.from(Instant.now()))
-                .map((r,c) -> new GeoData(r.getString(1), r.getString(2), r.getString(3), r.getString(4), r.getString(5)))
+                .map((r,c) -> new GeoData(r.getString(1), r.getString(2), r.getString(3), r.getString(4), r.getString(5), r.getString(6)))
                 .list());
     }
 
