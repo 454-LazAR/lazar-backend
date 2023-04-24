@@ -171,9 +171,13 @@ public class GameEventService {
         }
 
         Optional<Game> game = gameRepository.getGame(player.getGameId());
-        if(game.isPresent() && game.get().getGameStatus() != Game.GameStatus.IN_PROGRESS) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game is still in the lobby or has finished.");
+        if(game.isPresent() && game.get().getGameStatus() == Game.GameStatus.FINISHED) {
+            return false;
         }
+        if(game.isPresent() && game.get().getGameStatus() != Game.GameStatus.IN_PROGRESS) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request.");
+        }
+
 
         // Same check as above.
         if(!DEBUG_MODE
