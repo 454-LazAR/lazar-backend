@@ -23,7 +23,7 @@ import static com.lazar.LazarApplication.DEBUG_MODE;
 public class GameEventService {
 
     public static final Long PING_INTERVAL = 1000L; // ms
-    public static final Integer DAMAGE_PER_HIT = 20;
+    public static final Integer DAMAGE_PER_HIT = 10;
     public static final Long TIMEOUT = PING_INTERVAL*15; // ms
 
     private static final Double MAX_DISTANCE = 170.0; // meters
@@ -171,9 +171,13 @@ public class GameEventService {
         }
 
         Optional<Game> game = gameRepository.getGame(player.getGameId());
-        if(game.isPresent() && game.get().getGameStatus() != Game.GameStatus.IN_PROGRESS) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game is still in the lobby or has finished.");
+        if(game.isPresent() && game.get().getGameStatus() == Game.GameStatus.FINISHED) {
+            return false;
         }
+        if(game.isPresent() && game.get().getGameStatus() != Game.GameStatus.IN_PROGRESS) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request.");
+        }
+
 
         // Same check as above.
         if(!DEBUG_MODE
