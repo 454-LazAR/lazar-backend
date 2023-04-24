@@ -39,17 +39,12 @@ geoData:
     INSERT INTO geoData (playerId, gameId, longitude, latitude, timeReceived) VALUES (:playerId, :gameId, :longitude, :latitude, :timeReceived)
   get:
     in.range: >
-      SELECT g.playerId, g.gameId, t.avgLong, t.avgLat, g.timeReceived, p.health
+      SELECT g.playerId, g.gameId, g.longitude, g.latitude, g.timeReceived
       FROM geoData g
       INNER JOIN (
-        SELECT playerId, AVG(latitude) as avgLat, AVG(longitude) as avgLong, MAX(timeReceived) as maxTimestamp
-        FROM (
-          SELECT playerId, latitude, longitude, timeReceived,
-            ROW_NUMBER() OVER (PARTITION BY playerId ORDER BY timeReceived DESC) AS rn
-          FROM geoData
-          WHERE gameId = :gameId AND playerId != :playerId
-        ) subquery
-        WHERE rn <= 5 AND timeReceived >= :minTime
+        SELECT playerId, MAX(timeReceived) as maxTimestamp
+        FROM geoData
+        WHERE gameId = :gameId AND playerId != :playerId AND timeReceived BETWEEN :min AND :max
         GROUP BY playerId
       ) t ON g.playerId = t.playerId AND g.timeReceived = t.maxTimestamp
       INNER JOIN players p ON g.playerId = p.id

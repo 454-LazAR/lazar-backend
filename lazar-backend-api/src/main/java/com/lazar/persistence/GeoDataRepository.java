@@ -27,11 +27,12 @@ public class GeoDataRepository {
     private Properties queries;
 
     public List<GeoData> getGeoDataForHitCheck(GeoData shooterData) {
-        Timestamp minTime = Timestamp.from(Instant.now().minusMillis(TIMEOUT));
+        Timestamp min = Timestamp.from(Instant.now().minusMillis(TIMEOUT));
         return jdbi.withHandle(h -> h.createQuery(queries.getProperty("geoData.get.in.range"))
                 .bind("gameId", shooterData.getGameId())
                 .bind("playerId", shooterData.getPlayerId())
-                .bind("minTime", minTime)
+                .bind("min", min)
+                .bind("max", Timestamp.from(Instant.now()))
                 .map((r,c) -> new GeoData(r.getString(1), r.getString(2), r.getString(3), r.getString(4), r.getString(5), r.getString(6)))
                 .list());
     }

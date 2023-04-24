@@ -14,7 +14,7 @@ All game-functionality requests must have a valid player UUID.
 |--------|---------|--------------------------------------------|-------------------------|
 | `GET`  | `/hello-world` | Test your connection to the API    | 200 |
 | `POST` | `/create`| Create a new game | 200, 400, 500 |
-| `POST` | `/join` | Join a game with a game id and a username | 200, 400, 404, 409, 500 |
+| `POST` | `/join` | Join a game with a game id and a username | 200, 400, 403, 404, 409, 500 |
 | `POST` | `/lobby-ping` | Get a list of players and see if the game has started | 200, 400, 404 |
 | `POST` | `/game-ping` | Update the server with a player's location and receive game status | 200, 400, 404, 500 |
 | `POST` | `/start` | Start the game | 200, 400, 401, 403, 404, 409, 500 |
@@ -106,6 +106,17 @@ A `400` will be sent if username or gameid are not specified.
 }
 ```
 
+A `403` will be sent if the specified gameId is already in progress, has concluded, or was abandoned.
+```json
+{
+  "timestamp": "2023-03-28T06:11:46.455+00:00",
+  "status": 403,
+  "error": "Forbidden",
+  "message": "Game is not in the lobby.",
+  "path": "/join"
+}
+```
+
 A `404` will be sent if the specified gameId is not valid (there is no game that exists with that ID).
 ```json
 {
@@ -123,7 +134,7 @@ A `409` will be sent if the specified gameId is already in progress, has conclud
   "timestamp": "2023-03-28T06:11:46.455+00:00",
   "status": 409,
   "error": "Conflict",
-  "message": "Game is not joinable.",
+  "message": "A user with the name drew already exists in the game 1q3wer.",
   "path": "/join"
 }
 ```
