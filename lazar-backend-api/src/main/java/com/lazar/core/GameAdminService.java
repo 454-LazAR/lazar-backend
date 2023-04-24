@@ -77,7 +77,7 @@ public class GameAdminService {
         if(game.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game does not exist.");
         } else if(game.get().getGameStatus() != Game.GameStatus.IN_LOBBY) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Game is not joinable.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Game is not in the lobby.");
         }
         return addPlayerToGame(playerDetails);
     }
@@ -86,7 +86,7 @@ public class GameAdminService {
         playerDetails.setId(UUID.randomUUID());
         playerDetails.setHealth(MAX_HEALTH);
         if(playerRepository.getUsernamesByGame(playerDetails.getGameId()).contains(playerDetails.getUsername())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already used in this game.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A user with the name " + playerDetails.getUsername() + " already exists in the game " + playerDetails.getGameId() + ".");
         }
         if(!playerRepository.insertPlayer(playerDetails)) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error adding player to database.");
