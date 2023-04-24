@@ -155,7 +155,7 @@ public class GameEventService {
     public boolean checkHit(GeoData geoData) {
 
         // Simplify logic
-        if (Duration.between(Instant.now(), geoData.getTimestamp()).toMillis() <= MAX_SHOT_DELAY) {
+        if (Duration.between(Instant.now(), geoData.getTimestamp()).toMillis() >= MAX_SHOT_DELAY) {
             return false;
         }
 
