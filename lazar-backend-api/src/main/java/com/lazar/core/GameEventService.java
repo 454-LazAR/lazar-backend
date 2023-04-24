@@ -22,13 +22,15 @@ import static com.lazar.LazarApplication.DEBUG_MODE;
 @Slf4j
 public class GameEventService {
 
-    public static final Long PING_INTERVAL = 2000L; // ms
+    public static final Long PING_INTERVAL = 1000L; // ms
     public static final Integer DAMAGE_PER_HIT = 20;
     public static final Long TIMEOUT = PING_INTERVAL*15; // ms
 
     private static final Double MAX_DISTANCE = 170.0; // meters
     private static final Double MAX_HEADING_DIFF = 100.0; // degrees
     private static final Double MIN_HIT_SCORE = 0.66;
+
+    private static final Long MAX_SHOT_DELAY = 5000L; // ms
 
     @Autowired
     private PlayerRepository playerRepository;
@@ -151,6 +153,11 @@ public class GameEventService {
     }
 
     public boolean checkHit(GeoData geoData) {
+
+        // Simplify logic
+        if (Duration.between(Instant.now(), geoData.getTimestamp()).toMillis() <= MAX_SHOT_DELAY) {
+            return false;
+        }
 
         Player player = checkRecentValidPlayer(geoData);
         geoData.setGameId(player.getGameId());
