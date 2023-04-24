@@ -48,4 +48,4 @@ geoData:
         GROUP BY playerId
       ) t ON g.playerId = t.playerId AND g.timeReceived = t.maxTimestamp
       INNER JOIN players p ON g.playerId = p.id
-      WHERE p.health != 0 && p.isInactive != true;
+      WHERE p.health != 0 OR p.isInactive != true;
