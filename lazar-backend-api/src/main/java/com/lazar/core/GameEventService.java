@@ -215,7 +215,7 @@ public class GameEventService {
         }
 
         // Check game over
-        if(playerLocations.size() == 1 && playerLocations.get(0).getPlayerHealth() - decrementBy <= 0) {
+        if(playerLocations.size() == 1 && playerLocations.get(0).getHealth() - decrementBy <= 0) {
             gameRepository.updateGameStatus(geoData.getGameId(), Game.GameStatus.FINISHED);
         }
 
