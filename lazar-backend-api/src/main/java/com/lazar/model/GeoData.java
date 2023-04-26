@@ -54,7 +54,6 @@ public class GeoData implements Serializable {
     private Instant timestamp;
     private Double heading;
     private Double hitScore;
-    private Integer playerHealth;
     private Integer health;
 
     // For converting from database response to backend object
