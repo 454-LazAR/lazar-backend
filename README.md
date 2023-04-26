@@ -378,6 +378,17 @@ A `400` will be sent if `playerId` is inactive.
 }
 ```
 
+A `401` will be sent if the Game object associated with the `playerId` can't be found.
+```json
+{
+  "timestamp": "2023-03-28T06:10:25.918+00:00",
+  "status": 401,
+  "error": "Unauthorized",
+  "message": "Player is already dead.",
+  "path": "/check-hit"
+}
+```
+
 A `404` will be sent if the Game object associated with the `playerId` can't be found.
 ```json
 {
