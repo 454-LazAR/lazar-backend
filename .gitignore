@@ -27,7 +27,9 @@ README.html
 
 # temporary docker related things
 data/
+out/
 .m2
 
 # local cert
 *.p12
+*.pem

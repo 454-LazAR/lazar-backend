@@ -34,6 +34,7 @@ players:
       UPDATE players SET isInactive = true WHERE id = :id
   delete:
 
+# Most recent location for each active and alive player (who is not the shooter) in the last 30s
 geoData:
   add.ping: >
     INSERT INTO geoData (playerId, gameId, longitude, latitude, timeReceived) VALUES (:playerId, :gameId, :longitude, :latitude, :timeReceived)

@@ -42,9 +42,7 @@ public class GeoData implements Serializable {
                 * Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        double distance = EARTH_RADIUS * c;
-
-        return distance;
+        return EARTH_RADIUS * c;
     }
 
     private UUID playerId;
