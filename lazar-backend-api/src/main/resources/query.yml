@@ -23,7 +23,7 @@ players:
     recent.by.id: >
       SELECT players.id, players.gameId, players.health, players.isInactive, MAX(geoData.timeReceived) AS most_recent_timeReceived
       FROM players
-      INNER JOIN geoData ON players.id = geoData.playerId
+      LEFT JOIN geoData ON players.id = geoData.playerId
       WHERE players.id = :id;
   insert: >
     INSERT INTO players (id, gameId, username, health, isAdmin) VALUES (:id, :gameId, :username, :health, :isAdmin)

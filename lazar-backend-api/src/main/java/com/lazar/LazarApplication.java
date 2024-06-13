@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Import;
 @Import({JDBIConfig.class})
 public class LazarApplication {
 
-	public static final boolean DEBUG_MODE = true;
+	public static final boolean DEBUG_MODE = false;
 
 	public static void main(String[] args) {
 		SpringApplication.run(LazarApplication.class, args);
